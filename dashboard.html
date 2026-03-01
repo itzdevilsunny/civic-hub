@@ -4,26 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicHub | Live Dashboard</title>
+    <title>CivicHub | Secure Session Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Fira Code', 'monospace'] },
                     colors: { civic: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' } }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar for dropdowns */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        .term-glow {
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -38,18 +51,60 @@
         }
 
         .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-5px);
+                transform: translateY(5px);
             }
 
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10b981;
+        }
+
+        .toggle-checkbox:checked+.toggle-label {
+            background-color: #10b981;
+        }
+
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .toggle-label {
+            background-color: #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .progress-bar {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Spinner for Backend Loading Simulation */
+        .loader {
+            border-top-color: #0ea5e9;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
             }
         }
     </style>
@@ -59,97 +114,66 @@
 
     <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex transition-all duration-300 z-20">
         <div class="h-16 flex items-center px-6 border-b border-slate-800">
-            <div class="bg-civic-600 text-white p-1.5 rounded-lg mr-3 shadow-md">
-                <i data-lucide="landmark" class="w-5 h-5"></i>
-            </div>
+            <div class="bg-civic-600 text-white p-1.5 rounded-lg mr-3 shadow-md"><i data-lucide="landmark"
+                    class="w-5 h-5"></i></div>
             <span class="font-bold text-xl text-white tracking-tight">CivicHub</span>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
             <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-4">Overview</p>
             <button data-view="dashboard"
-                class="nav-btn w-full flex items-center gap-3 px-3 py-2 bg-civic-600/20 text-civic-400 rounded-lg transition-colors">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span class="font-medium">Dashboard</span>
-            </button>
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 bg-civic-600/20 text-civic-400 rounded-lg transition-colors group"><i
+                    data-lucide="layout-dashboard" class="w-5 h-5"></i><span
+                    class="font-medium">Dashboard</span></button>
 
             <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">The 5 Pillars</p>
             <button data-view="rights"
-                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="shield-check" class="w-5 h-5 text-blue-400"></i>
-                <span class="font-medium">Digital Rights</span>
-            </button>
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group"><i
+                    data-lucide="shield-check" class="w-5 h-5 text-blue-400"></i><span class="font-medium">Digital
+                    Rights</span></button>
             <button data-view="democracy"
-                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="users" class="w-5 h-5 text-emerald-400"></i>
-                <span class="font-medium">Democracy Hub</span>
-            </button>
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group"><i
+                    data-lucide="users" class="w-5 h-5 text-emerald-400"></i><span class="font-medium">Democracy
+                    Hub</span></button>
             <button data-view="petitions"
-                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="scroll-text" class="w-5 h-5 text-amber-400"></i>
-                <span class="font-medium">Petitions & Law</span>
-            </button>
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group"><i
+                    data-lucide="scroll-text" class="w-5 h-5 text-amber-400"></i><span class="font-medium">Petitions &
+                    Law</span></button>
             <button data-view="services"
-                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="smartphone" class="w-5 h-5 text-indigo-400"></i>
-                <span class="font-medium">Citizen Services</span>
-            </button>
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group"><i
+                    data-lucide="smartphone" class="w-5 h-5 text-indigo-400"></i><span class="font-medium">Citizen
+                    Services</span></button>
             <button data-view="collab"
-                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="handshake" class="w-5 h-5 text-rose-400"></i>
-                <span class="font-medium">Public/Private Collab</span>
-            </button>
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group"><i
+                    data-lucide="handshake" class="w-5 h-5 text-rose-400"></i><span class="font-medium">Public/Private
+                    Collab</span></button>
         </nav>
-
-        <div class="p-4 border-t border-slate-800">
-            <button id="logout-btn"
-                class="w-full flex items-center justify-between hover:bg-rose-500/10 hover:text-rose-400 p-2 rounded-lg transition-colors group">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-sm">
-                        C1
-                    </div>
-                    <div class="text-left flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate group-hover:text-rose-400 transition-colors">
-                            Logged in as</p>
-                        <p class="text-xs text-slate-400 truncate">Verified Citizen Identity</p>
-                    </div>
-                </div>
-                <i data-lucide="log-out" class="w-4 h-4 text-slate-400 group-hover:text-rose-400 transition-colors"></i>
-            </button>
-        </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
-
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30">
             <div class="flex items-center gap-4 flex-1">
-                <button class="md:hidden text-slate-500 hover:text-slate-700">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
-                </button>
+                <button class="md:hidden text-slate-500 hover:text-slate-700"><i data-lucide="menu"
+                        class="w-6 h-6"></i></button>
 
                 <div class="hidden sm:flex items-center gap-1 border-r border-slate-200 pr-4">
                     <button id="nav-back"
                         class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-not-allowed"
-                        disabled>
-                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                    </button>
+                        disabled title="Fetch previous view state"><i data-lucide="chevron-left"
+                            class="w-5 h-5"></i></button>
                     <button id="nav-forward"
                         class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-not-allowed"
-                        disabled>
-                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <div class="relative w-full max-w-md hidden lg:block">
-                    <i data-lucide="search"
-                        class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" placeholder="Search bills, services, or public data..."
-                        class="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-civic-500 focus:ring-2 focus:ring-civic-200 transition-all outline-none">
+                        disabled title="Fetch next view state"><i data-lucide="chevron-right"
+                            class="w-5 h-5"></i></button>
+                    <div id="nav-loader" class="hidden w-4 h-4 border-2 border-slate-200 rounded-full loader ml-2">
+                    </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-4 relative">
+                <button id="btn-exit" onclick="window.location.href='index.html'"
+                    class="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-full transition-colors focus:outline-none"
+                    title="Log Out"><i data-lucide="log-out" class="w-5 h-5"></i></button>
                 <button id="notification-toggle"
                     class="relative p-2 text-slate-500 hover:bg-slate-100 hover:text-civic-600 rounded-full transition-colors focus:outline-none">
                     <i data-lucide="bell" class="w-5 h-5"></i>
@@ -158,20 +182,18 @@
                 </button>
 
                 <div id="notification-panel"
-                    class="hidden absolute top-12 right-0 w-80 bg-white border border-slate-200 shadow-2xl rounded-xl overflow-hidden z-50 fade-in">
-                    <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                        <span class="font-bold text-sm text-slate-800">Live Alerts</span>
-                        <button id="clear-notifs" class="text-xs text-civic-600 hover:text-civic-800 font-medium">Clear
-                            All</button>
-                    </div>
+                    class="hidden absolute top-12 right-12 w-80 bg-white border border-slate-200 shadow-2xl rounded-xl overflow-hidden z-50 fade-in">
+                    <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50"><span
+                            class="font-bold text-sm text-slate-800">Live Alerts</span><button id="clear-notifs"
+                            class="text-xs text-civic-600 hover:text-civic-800 font-medium">Clear All</button></div>
                     <div id="notification-list" class="max-h-80 overflow-y-auto">
-                        <div class="p-8 text-center text-slate-400 text-sm italic" id="empty-notifs">
-                            Systems online. Awaiting data...
-                        </div>
+                        <div class="p-8 text-center text-slate-400 text-sm italic" id="empty-notifs">Systems online.
+                            Awaiting data...</div>
                     </div>
                 </div>
 
-                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+                <button id="btn-settings"
+                    class="p-2 text-slate-500 hover:bg-slate-100 hover:text-civic-600 rounded-full transition-colors focus:outline-none">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -180,40 +202,36 @@
         <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-50" id="main-view-container">
 
             <div id="view-dashboard" class="max-w-7xl mx-auto space-y-8 fade-in">
-
                 <div class="flex justify-between items-end">
                     <div>
-                        <h1 class="text-2xl font-bold text-slate-900" id="page-title">Civic Dashboard</h1>
+                        <h1 class="text-2xl font-bold text-slate-900">Civic Dashboard</h1>
                         <p class="text-slate-500 mt-1">Your unified portal for governance, services, and community
                             impact.</p>
                     </div>
                     <div
                         class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Live Connection Active
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>Live Connection Active
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="shield-check"
-                                    class="w-6 h-6"></i></div>
-                            <span class="flex items-center text-emerald-600 text-sm font-medium"
-                                id="kpi-literacy-trend">--</span>
+                                    class="w-6 h-6"></i></div><span
+                                class="flex items-center text-emerald-600 text-sm font-medium"><i
+                                    data-lucide="trending-up" class="w-4 h-4 mr-1"></i> 98%</span>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Digital Literacy Score</h3>
-                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-literacy">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1">Advanced</p>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="vote"
-                                    class="w-6 h-6"></i></div>
-                            <span class="flex items-center text-emerald-600 text-sm font-medium"
-                                id="kpi-townhall-next">--</span>
+                                    class="w-6 h-6"></i></div><span
+                                class="flex items-center text-emerald-600 text-sm font-medium">Next: 14 Days</span>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Upcoming Townhalls</h3>
-                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-townhall">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1">3 Scheduled</p>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
@@ -221,132 +239,758 @@
                                     class="w-6 h-6"></i></div>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Petitions Supported</h3>
-                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-petitions">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-petitions">12 Active</p>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="file-check-2"
-                                    class="w-6 h-6"></i></div>
-                            <span class="flex items-center text-slate-400 text-sm font-medium"
-                                id="kpi-services-status">--</span>
+                                    class="w-6 h-6"></i></div><span
+                                class="flex items-center text-emerald-600 text-sm font-medium"
+                                id="kpi-services-trend">All clear</span>
                         </div>
-                        <h3 class="text-slate-500 text-sm font-medium">Pending Services</h3>
-                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-services">Loading...</p>
+                        <h3 class="text-slate-500 text-sm font-medium">Active Services</h3>
+                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-services">0 Pending</p>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-
                     <div class="xl:col-span-2 space-y-8">
-
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 z-0">
                             <div class="flex justify-between items-center mb-4">
                                 <div>
                                     <h2 class="text-lg font-bold text-slate-900">Live Spatial Feed</h2>
                                     <p class="text-sm text-slate-500">Monitoring municipal zones and geofenced
-                                        perimeters in real-time.</p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <span
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> SCAT
-                                        Active
-                                    </span>
-                                    <span
-                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span> Sensors
-                                        Online
-                                    </span>
+                                        perimeters.</p>
                                 </div>
                             </div>
                             <div id="civicMap" class="w-full h-[350px] rounded-xl border border-slate-200 z-0"></div>
                         </div>
-
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center">
-                                <div>
-                                    <h2 class="text-lg font-bold text-slate-900">Your Civic & PPP Initiatives</h2>
-                                    <p class="text-sm text-slate-500">Track proposals moving through legislative and
-                                        public works filters.</p>
-                                </div>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr
-                                            class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                                            <th class="px-6 py-3 font-medium">Project / Proposal Name</th>
-                                            <th class="px-6 py-3 font-medium">Pillar</th>
-                                            <th class="px-6 py-3 font-medium">Current Stage</th>
-                                            <th class="px-6 py-3 font-medium">Tech Backbone</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="initiatives-tbody" class="divide-y divide-slate-100 text-sm">
-                                        <tr>
-                                            <td colspan="4" class="px-6 py-8 text-center text-slate-400">Loading system
-                                                data...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
                     </div>
-
                     <div class="space-y-8">
-
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                             <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-lg font-bold text-slate-900">Democracy Engagement</h2>
-                                <span class="text-xs text-slate-400" id="chart-last-updated">Updating...</span>
+                                <h2 class="text-lg font-bold text-slate-900">Democracy Engagement</h2><span
+                                    class="text-xs text-slate-400" id="chart-last-updated">Updating...</span>
                             </div>
-                            <div class="relative h-[250px] w-full">
-                                <canvas id="engagementChart"></canvas>
+                            <div class="relative h-[250px] w-full"><canvas id="engagementChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-rights" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 border-b border-slate-200 pb-6 gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Digital Rights Center</h1>
+                        <p class="text-slate-500 mt-2 text-base">Manage data sovereignty, define granular API consents,
+                            and audit access logs.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Data
+                                Exposure Level</p>
+                            <p class="text-lg font-black" id="exposure-label"><span
+                                    class="text-amber-500">Moderate</span></p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center border-4" id="exposure-ring"
+                            style="border-color: #f59e0b;">
+                            <i data-lucide="shield" class="w-5 h-5 text-slate-700"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                    <div class="lg:col-span-5 space-y-6">
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="sliders-horizontal" class="w-5 h-5 text-civic-600"></i> Active API
+                                Consents
+                            </h2>
+
+                            <div class="space-y-4">
+                                <div class="border border-slate-100 rounded-xl overflow-hidden">
+                                    <div
+                                        class="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-blue-500"></i>
+                                        <span class="font-bold text-sm text-slate-800">Geolocation Data</span>
+                                    </div>
+                                    <div class="p-4 space-y-4 bg-white">
+                                        <div class="flex justify-between items-center">
+                                            <div class="pr-4">
+                                                <p class="text-sm font-semibold text-slate-800">MCD Smart Parking</p>
+                                                <p class="text-[11px] text-slate-500 mt-0.5">Required for capacity
+                                                    enforcement.</p>
+                                            </div>
+                                            <div class="relative inline-block w-10 align-middle select-none"><input
+                                                    type="checkbox" id="tgl-loc-parking"
+                                                    class="privacy-tgl toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                                    checked /><label for="tgl-loc-parking"
+                                                    class="toggle-label block overflow-hidden h-5 rounded-full cursor-pointer"></label>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div class="pr-4">
+                                                <p class="text-sm font-semibold text-slate-800">Traffic Flow Analytics
+                                                </p>
+                                                <p class="text-[11px] text-slate-500 mt-0.5">Anonymized route tracking.
+                                                </p>
+                                            </div>
+                                            <div class="relative inline-block w-10 align-middle select-none"><input
+                                                    type="checkbox" id="tgl-loc-traffic"
+                                                    class="privacy-tgl toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" /><label
+                                                    for="tgl-loc-traffic"
+                                                    class="toggle-label block overflow-hidden h-5 rounded-full cursor-pointer"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-slate-100 rounded-xl overflow-hidden">
+                                    <div
+                                        class="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+                                        <i data-lucide="scan-face" class="w-4 h-4 text-indigo-500"></i>
+                                        <span class="font-bold text-sm text-slate-800">Biometric Identity</span>
+                                    </div>
+                                    <div class="p-4 space-y-4 bg-white">
+                                        <div class="flex justify-between items-center">
+                                            <div class="pr-4">
+                                                <p class="text-sm font-semibold text-slate-800">SCAT Attendance Node</p>
+                                                <p class="text-[11px] text-slate-500 mt-0.5">Facial geometry
+                                                    verification.</p>
+                                            </div>
+                                            <div class="relative inline-block w-10 align-middle select-none"><input
+                                                    type="checkbox" id="tgl-bio-scat"
+                                                    class="privacy-tgl toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                                                    checked /><label for="tgl-bio-scat"
+                                                    class="toggle-label block overflow-hidden h-5 rounded-full cursor-pointer"></label>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div class="pr-4">
+                                                <p class="text-sm font-semibold text-slate-800">Public Transit CCTV</p>
+                                                <p class="text-[11px] text-slate-500 mt-0.5">Automated threat detection.
+                                                </p>
+                                            </div>
+                                            <div class="relative inline-block w-10 align-middle select-none"><input
+                                                    type="checkbox" id="tgl-bio-cctv"
+                                                    class="privacy-tgl toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer" /><label
+                                                    for="tgl-bio-cctv"
+                                                    class="toggle-label block overflow-hidden h-5 rounded-full cursor-pointer"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
-                                    <i data-lucide="receipt"
-                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold">Pay Taxes</span>
+                            <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="hard-drive" class="w-5 h-5 text-slate-600"></i> Data Sovereignty
+                            </h2>
+                            <div class="grid grid-cols-1 gap-3">
+                                <button id="btn-export-data"
+                                    class="w-full flex items-center justify-center gap-2 p-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-bold text-sm transition-colors border border-blue-200">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Request Personal Archive
                                 </button>
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
-                                    <i data-lucide="id-card"
-                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold">Renew ID</span>
-                                </button>
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
-                                    <i data-lucide="map-pin"
-                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold">Report Issue</span>
-                                </button>
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
-                                    <i data-lucide="folder-lock"
-                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold">Data Privacy</span>
+                                <button id="btn-purge-data"
+                                    class="w-full flex items-center justify-center gap-2 p-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-sm transition-colors border border-rose-200">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i> Purge Municipal Cache
                                 </button>
                             </div>
                         </div>
 
                     </div>
+
+                    <div class="lg:col-span-7 h-full">
+                        <div
+                            class="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-slate-800 flex flex-col h-full min-h-[550px] relative overflow-hidden">
+                            <div
+                                class="flex justify-between items-center border-b border-slate-700/50 pb-4 mb-4 relative z-10">
+                                <h2
+                                    class="text-sm font-bold text-slate-300 flex items-center gap-2 uppercase tracking-widest">
+                                    <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i> Secure Audit Ledger
+                                </h2>
+                                <div
+                                    class="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded border border-slate-700">
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></span>
+                                    <span
+                                        class="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Listening</span>
+                                </div>
+                            </div>
+
+                            <div id="audit-terminal"
+                                class="flex-1 overflow-y-auto pr-2 space-y-1.5 font-mono text-[11px] sm:text-xs leading-relaxed term-container relative z-10">
+                                <div class="text-slate-500 mb-4 select-none">
+                                    > CONNECTING TO MUNICIPAL LEDGER...<br>
+                                    > ENCRYPTED WEBSOCKET ESTABLISHED.<br>
+                                    > AWAITING INCOMING API REQUESTS...
+                                </div>
+                            </div>
+
+                            <div
+                                class="absolute bottom-0 right-0 w-full h-32 bg-gradient-to-t from-[#0f172a] to-transparent pointer-events-none z-10">
+                            </div>
+                            <div
+                                class="absolute -top-32 -right-32 w-96 h-96 bg-blue-500/10 rounded-full mix-blend-screen filter blur-[100px] pointer-events-none">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+            </div>
+
+            <div id="view-democracy" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 border-b border-slate-200 pb-6 gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Democracy Hub</h1>
+                        <p class="text-slate-500 mt-2 text-base">Shape consensus, vote on live proposals, and join the
+                            digital townhall.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Civic
+                                Influence Score</p>
+                            <p class="text-lg font-black text-emerald-600" id="influence-score">4,050 <span
+                                    class="text-xs text-slate-400 font-normal">pts</span></p>
+                        </div>
+                        <div
+                            class="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-50 border border-emerald-200">
+                            <i data-lucide="award" class="w-5 h-5 text-emerald-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="vote" class="w-5 h-5 text-civic-600"></i> Active Municipal Mandates
+                        </h2>
+
+                        <div id="polls-container" class="space-y-5">
+                            <div
+                                class="p-8 text-center text-slate-400 italic bg-white rounded-2xl border border-slate-200">
+                                <div
+                                    class="w-6 h-6 border-2 border-slate-300 border-t-civic-500 rounded-full animate-spin mx-auto mb-2">
+                                </div>
+                                Fetching live consensus data...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 h-full">
+                        <div
+                            class="bg-white p-0 rounded-2xl shadow-lg border border-slate-200 flex flex-col h-full min-h-[600px] overflow-hidden">
+
+                            <div
+                                class="bg-slate-900 p-4 border-b border-slate-800 flex justify-between items-center z-10">
+                                <div>
+                                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i data-lucide="messages-square" class="w-4 h-4 text-emerald-400"></i> Digital
+                                        Townhall
+                                    </h2>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Local Assembly: Ward 42</p>
+                                </div>
+                                <div
+                                    class="flex items-center gap-2 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></span>
+                                    <span class="text-[10px] font-bold text-emerald-400 tracking-wider">LIVE</span>
+                                </div>
+                            </div>
+
+                            <div id="townhall-feed"
+                                class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 custom-scrollbar">
+                            </div>
+
+                            <div class="p-4 bg-white border-t border-slate-200">
+                                <form id="townhall-form" class="flex gap-2 relative">
+                                    <input type="text" id="townhall-input"
+                                        placeholder="Broadcast your opinion to the assembly..." autocomplete="off"
+                                        class="flex-1 px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-civic-500 focus:bg-white transition-all pr-12">
+                                    <button type="submit"
+                                        class="absolute right-2 top-1.5 bottom-1.5 px-3 bg-civic-600 hover:bg-civic-700 text-white rounded-lg transition-colors flex items-center justify-center">
+                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                                <p class="text-[10px] text-slate-400 text-center mt-2">Messages are recorded on the
+                                    public civic ledger.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="view-petitions" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 border-b border-slate-200 pb-6 gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Petitions & Law</h1>
+                        <p class="text-slate-500 mt-2 text-base">Grassroots legislation and signature pipelines.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Legislative
+                                Cycle</p>
+                            <p class="text-sm font-bold text-slate-700"><span class="text-amber-500 font-black">Q1
+                                    2026</span> Active</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <div class="bg-slate-100/50 p-4 rounded-2xl border border-slate-200 flex flex-col h-[500px]">
+                        <h2
+                            class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> Public Signatures
+                        </h2>
+                        <div id="kanban-signatures" class="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50/30 p-4 rounded-2xl border border-amber-100 flex flex-col h-[500px]">
+                        <h2
+                            class="text-sm font-bold text-amber-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i data-lucide="scale" class="w-4 h-4 text-amber-500"></i> Committee Review
+                        </h2>
+                        <div id="kanban-review" class="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
+                        </div>
+                    </div>
+
+                    <div class="bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100 flex flex-col h-[500px]">
+                        <h2
+                            class="text-sm font-bold text-emerald-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i data-lucide="landmark" class="w-4 h-4 text-emerald-500"></i> Codified Law
+                        </h2>
+                        <div id="kanban-law" class="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <i data-lucide="pen-tool" class="w-5 h-5 text-civic-500"></i> Draft Civic Mandate
+                        </h2>
+                        <form id="draft-petition-form" class="space-y-5">
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Mandate
+                                    Title</label>
+                                <input type="text" id="petition-title" required
+                                    placeholder="e.g. Mandatory Solar Panels on New Municipal Buildings"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-civic-500 outline-none transition-all text-sm font-medium">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Proposal
+                                    Details</label>
+                                <textarea id="petition-desc" required rows="3"
+                                    placeholder="Explain the grievance and proposed legislative solution..."
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-civic-500 outline-none transition-all resize-none text-sm"></textarea>
+                            </div>
+                            <div class="flex justify-end pt-2">
+                                <button type="submit"
+                                    class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 active:scale-95">
+                                    <i data-lucide="file-plus" class="w-4 h-4"></i> Submit to Pipeline
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div
+                        class="bg-slate-900 p-6 md:p-8 rounded-2xl shadow-xl border border-slate-800 flex flex-col relative overflow-hidden h-full min-h-[300px]">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20 pointer-events-none">
+                        </div>
+
+                        <h2
+                            class="text-sm font-bold text-slate-300 mb-4 flex items-center justify-between border-b border-slate-700/50 pb-4 relative z-10 uppercase tracking-widest">
+                            <span class="flex items-center gap-2"><i data-lucide="gavel"
+                                    class="w-4 h-4 text-amber-400"></i> Assembly Tracker</span>
+                            <div
+                                class="flex items-center gap-2 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-[9px] font-mono text-emerald-400">SYNCED</span>
+                            </div>
+                        </h2>
+
+                        <div id="law-feed-container"
+                            class="flex-1 overflow-y-auto space-y-3 pr-2 relative z-10 custom-scrollbar font-mono text-xs">
+                            <div class="text-slate-500 italic text-center mt-10" id="law-feed-empty">Connecting to
+                                municipal legislative node...</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="view-services" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 border-b border-slate-200 pb-6 gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Citizen Services</h1>
+                        <p class="text-slate-500 mt-2 text-base">Smart grievance redressal, utility management, and
+                            E-Governance tracking.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Municipal
+                                SLA</p>
+                            <p class="text-sm font-bold text-emerald-600">94% Efficiency</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+
+                    <div class="xl:col-span-4 space-y-6">
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h2
+                                class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Smart Utilities
+                            </h2>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button onclick="processUtility('Property Tax', this)"
+                                    class="utility-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all text-slate-600 relative overflow-hidden group">
+                                    <i data-lucide="home"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500 transition-colors ui-icon"></i>
+                                    <span class="text-xs font-bold text-center ui-text">Property Tax</span>
+                                </button>
+                                <button onclick="processUtility('Water Bill', this)"
+                                    class="utility-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all text-slate-600 relative overflow-hidden group">
+                                    <i data-lucide="droplet"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500 transition-colors ui-icon"></i>
+                                    <span class="text-xs font-bold text-center ui-text">Water Bill</span>
+                                </button>
+                                <button onclick="processUtility('Transit Pass', this)"
+                                    class="utility-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all text-slate-600 relative overflow-hidden group">
+                                    <i data-lucide="train"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500 transition-colors ui-icon"></i>
+                                    <span class="text-xs font-bold text-center ui-text">Metro Pass</span>
+                                </button>
+                                <button onclick="processUtility('Income Cert.', this)"
+                                    class="utility-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all text-slate-600 relative overflow-hidden group">
+                                    <i data-lucide="file-badge"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500 transition-colors ui-icon"></i>
+                                    <span class="text-xs font-bold text-center ui-text">Income Cert.</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-gradient-to-br from-indigo-900 to-slate-900 p-6 rounded-2xl shadow-xl border border-indigo-800 relative overflow-hidden">
+                            <div
+                                class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full mix-blend-screen filter blur-[60px] opacity-30">
+                            </div>
+
+                            <h2 class="text-base font-bold text-white mb-5 flex items-center gap-2 relative z-10">
+                                <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i> Smart Grievance
+                                Dispatch
+                            </h2>
+
+                            <form id="service-request-form" class="space-y-4 relative z-10">
+                                <div>
+                                    <div class="flex justify-between items-end mb-1.5">
+                                        <label
+                                            class="block text-[10px] font-bold text-indigo-200 uppercase tracking-wider">Issue
+                                            Description</label>
+                                        <span id="auto-tag-badge"
+                                            class="text-[9px] bg-indigo-500/30 text-indigo-200 px-2 py-0.5 rounded hidden">Auto-tagging...</span>
+                                    </div>
+                                    <textarea id="sr-desc" required rows="3"
+                                        placeholder="Describe the issue... (e.g. 'Huge pothole on Main St.')"
+                                        class="w-full px-3 py-2.5 bg-slate-800/50 text-white text-sm border border-indigo-500/30 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none resize-none placeholder-slate-500 transition-all"></textarea>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label
+                                            class="block text-[10px] font-bold text-indigo-200 uppercase tracking-wider mb-1.5">Category</label>
+                                        <select id="sr-category" required
+                                            class="w-full px-3 py-2 bg-slate-800/50 text-white text-sm border border-indigo-500/30 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none appearance-none cursor-pointer transition-colors">
+                                            <option value="General">General / Other</option>
+                                            <option value="Infrastructure">Infrastructure</option>
+                                            <option value="Sanitation">Sanitation</option>
+                                            <option value="Electrical">Electrical</option>
+                                            <option value="Water">Water / Sewage</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-[10px] font-bold text-indigo-200 uppercase tracking-wider mb-1.5">Location</label>
+                                        <button type="button" id="btn-fetch-gps"
+                                            class="w-full px-3 py-2 bg-slate-800/80 hover:bg-slate-700 text-indigo-300 text-sm border border-indigo-500/30 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                            <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> <span
+                                                id="gps-text">Fetch GPS</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="submit"
+                                    class="w-full mt-2 bg-indigo-500 hover:bg-indigo-400 text-white py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                                    <i data-lucide="send" class="w-4 h-4"></i> Dispatch to Network
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="xl:col-span-8 h-full">
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-full flex flex-col min-h-[600px]">
+
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+                                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i data-lucide="activity-square" class="w-5 h-5 text-civic-600"></i> Active
+                                    Resolution Pipeline
+                                </h2>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-400">Total Active:</span>
+                                    <span
+                                        class="bg-civic-100 text-civic-700 text-sm font-black px-3 py-0.5 rounded-full"
+                                        id="active-sr-count">0</span>
+                                </div>
+                            </div>
+
+                            <div id="services-pipeline-container"
+                                class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="view-collab" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 border-b border-slate-200 pb-6 gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Public/Private Collab</h1>
+                        <p class="text-slate-500 mt-2 text-base">Joint venture command center. Track IoT rollouts,
+                            budgets, and private vendor APIs.</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Network
+                                Uptime</p>
+                            <p class="text-sm font-bold text-emerald-600">99.98% <span
+                                    class="text-slate-400 font-normal">SLA</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+                    <div class="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <i data-lucide="network" class="w-5 h-5 text-rose-500"></i> Live Infrastructure
+                                Deployment
+                            </h2>
+                            <div class="flex gap-3 text-[10px] font-bold uppercase tracking-wider">
+                                <span class="text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200">MCD
+                                    Parking Nodes</span>
+                                <span
+                                    class="text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">SCAT
+                                    Cameras</span>
+                            </div>
+                        </div>
+                        <div id="collab-map" class="w-full h-[300px] rounded-xl border border-slate-200 z-0"></div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                        <h2
+                            class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="pie-chart" class="w-5 h-5 text-amber-500"></i> Joint Venture Budget
+                        </h2>
+
+                        <div class="flex-1 flex flex-col justify-center space-y-6">
+                            <div>
+                                <div class="flex justify-between items-end mb-1">
+                                    <span class="text-xs font-bold text-slate-700">MCD Smart Parking Phase 1</span>
+                                    <span class="text-[10px] font-mono text-slate-400">Total: ₹12.5M</span>
+                                </div>
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="text-sm font-black text-rose-600" id="mcd-burn-val">₹0</span>
+                                    <span class="text-xs font-bold text-rose-500" id="mcd-burn-pct">0%</span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-rose-500 progress-bar" id="mcd-burn-bar" style="width: 0%">
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1 text-right">Avg Cost/Node: <span
+                                        class="font-bold text-slate-600">₹8,450</span></p>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-end mb-1">
+                                    <span class="text-xs font-bold text-slate-700">SCAT University Nodes</span>
+                                    <span class="text-[10px] font-mono text-slate-400">Total: ₹8.2M</span>
+                                </div>
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="text-sm font-black text-emerald-600" id="scat-burn-val">₹0</span>
+                                    <span class="text-xs font-bold text-emerald-500" id="scat-burn-pct">0%</span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-500 progress-bar" id="scat-burn-bar"
+                                        style="width: 0%"></div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1 text-right">Avg Cost/Node: <span
+                                        class="font-bold text-slate-600">₹12,200</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+                    <div class="xl:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h2
+                            class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <i data-lucide="briefcase" class="w-5 h-5 text-civic-500"></i> Live Vendor Procurement
+                        </h2>
+                        <div id="procurement-board"
+                            class="space-y-3 custom-scrollbar overflow-y-auto max-h-[300px] pr-2">
+                            <div class="text-center text-slate-400 italic text-sm py-8">Monitoring municipal contract
+                                bids...</div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="xl:col-span-7 bg-[#0a0f1c] p-5 rounded-2xl shadow-xl border border-slate-800 h-full min-h-[350px] flex flex-col relative overflow-hidden font-mono">
+
+                        <div
+                            class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3 relative z-10">
+                            <h2
+                                class="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest">
+                                <i data-lucide="terminal" class="w-4 h-4 text-emerald-500"></i> API Integrations Log
+                            </h2>
+                            <div class="flex gap-2">
+                                <button onclick="terminalPing('SCAT')"
+                                    class="text-[10px] bg-slate-800 hover:bg-emerald-900/50 text-emerald-400 px-2 py-1 rounded transition-colors border border-slate-700 active:scale-95 flex items-center gap-1">
+                                    <i data-lucide="fingerprint" class="w-3 h-3"></i> Ping SCAT
+                                </button>
+                                <button onclick="terminalPing('MCD')"
+                                    class="text-[10px] bg-slate-800 hover:bg-blue-900/50 text-blue-400 px-2 py-1 rounded transition-colors border border-slate-700 active:scale-95 flex items-center gap-1">
+                                    <i data-lucide="car" class="w-3 h-3"></i> Ping Parking
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="api-terminal-container"
+                            class="flex-1 overflow-y-auto space-y-1 text-[11px] custom-scrollbar relative z-10">
+                            <div class="text-emerald-500/50 mb-2">// WSS://civichub.gov/api/v1/collab initialized.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="view-settings" class="hidden max-w-4xl mx-auto space-y-8 fade-in">
+
+                <div class="flex justify-between items-end mb-8 border-b border-slate-200 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">System Settings</h1>
+                        <p class="text-slate-500 mt-2 text-lg">Manage your dashboard preferences and session security.
+                        </p>
+                    </div>
+                    <div
+                        class="text-sm font-bold text-slate-600 bg-slate-200 px-4 py-2 rounded-xl border border-slate-300 items-center gap-2 shadow-sm flex">
+                        <i data-lucide="server" class="w-5 h-5"></i> DB Synced
+                    </div>
+                </div>
+
+                <form id="settings-form" class="space-y-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex gap-6 items-center">
+                        <div
+                            class="w-20 h-20 bg-civic-100 text-civic-600 rounded-full flex items-center justify-center text-2xl font-bold">
+                            C1</div>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Verified Citizen Identity</h2>
+                            <p class="text-sm text-slate-500 font-mono mt-1" id="settings-identity">Loading ID...</p>
+                            <span
+                                class="inline-block mt-2 px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase rounded border border-emerald-200">KYC
+                                Verified</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-2">Global Preferences
+                        </h3>
+
+                        <div
+                            class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div>
+                                <h4 class="font-bold text-slate-800">Live System Alerts</h4>
+                                <p class="text-xs text-slate-500 mt-1">Receive real-time push notifications from the
+                                    municipal event engine.</p>
+                            </div>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                <input type="checkbox" id="pref-alerts"
+                                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                                <label for="pref-alerts"
+                                    class="toggle-label block h-6 rounded-full cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <div>
+                                <h4 class="font-bold text-slate-800">Telemetry Data Sharing</h4>
+                                <p class="text-xs text-slate-500 mt-1">Allow anonymous dashboard usage data to improve
+                                    civic services.</p>
+                            </div>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                                <input type="checkbox" id="pref-telemetry"
+                                    class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                                <label for="pref-telemetry"
+                                    class="toggle-label block h-6 rounded-full cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Default Dashboard View</label>
+                            <select id="pref-default-view"
+                                class="w-full md:w-1/2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-civic-500 outline-none">
+                                <option value="dashboard">Main Dashboard</option>
+                                <option value="rights">Digital Rights</option>
+                                <option value="services">Citizen Services</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-4">
+                        <button type="button"
+                            class="px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">Cancel</button>
+                        <button type="submit" id="btn-save-settings"
+                            class="bg-civic-600 hover:bg-civic-700 text-white px-8 py-2.5 rounded-xl font-bold shadow-md transition-all flex items-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i> Save to Database
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <div id="view-placeholder" class="hidden max-w-7xl mx-auto flex items-center justify-center h-full fade-in">
                 <div class="text-center">
                     <div
                         class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                        <i data-lucide="construction" class="w-10 h-10"></i>
+                        <i data-lucide="server" class="w-10 h-10"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-slate-900 mb-2" id="placeholder-title">Module Loading</h2>
-                    <p class="text-slate-500">This module is currently receiving real-time data configurations.</p>
+                    <p class="text-slate-500">Data fetched securely from backend.</p>
                 </div>
             </div>
 
@@ -355,361 +999,1359 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Icons
             lucide.createIcons();
 
-            /* =========================================
-               1. NAVIGATION & STATE MANAGEMENT
-               ========================================= */
-            const viewHistory = ['dashboard'];
-            let currentHistoryIndex = 0;
-            const views = {
-                'dashboard': 'Civic Dashboard',
-                'rights': 'Digital Rights Center',
-                'democracy': 'Democracy Hub',
-                'petitions': 'Legislative Petitions',
-                'services': 'Citizen Services',
-                'collab': 'Public/Private Collaborations'
-            };
+            // Leaflet Map Initialization
+            const map = L.map('civicMap', { zoomControl: false }).setView([28.6139, 77.2090], 12); // Delhi Center
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB' }).addTo(map);
 
-            const viewDashboard = document.getElementById('view-dashboard');
-            const viewPlaceholder = document.getElementById('view-placeholder');
-            const placeholderTitle = document.getElementById('placeholder-title');
-            const btnBack = document.getElementById('nav-back');
-            const btnForward = document.getElementById('nav-forward');
-            const navButtons = document.querySelectorAll('.nav-btn');
-
-            function navigateTo(viewId, pushHistory = true) {
-                // Update Sidebar UI
-                navButtons.forEach(btn => {
-                    if (btn.dataset.view === viewId) {
-                        btn.classList.remove('hover:bg-slate-800', 'hover:text-white', 'text-slate-300');
-                        btn.classList.add('bg-civic-600/20', 'text-civic-400');
-                    } else {
-                        btn.classList.add('hover:bg-slate-800', 'hover:text-white', 'text-slate-300');
-                        btn.classList.remove('bg-civic-600/20', 'text-civic-400');
-                    }
-                });
-
-                // Toggle Content
-                if (viewId === 'dashboard') {
-                    viewDashboard.classList.remove('hidden');
-                    viewPlaceholder.classList.add('hidden');
-                } else {
-                    viewDashboard.classList.add('hidden');
-                    viewPlaceholder.classList.remove('hidden');
-                    placeholderTitle.innerText = views[viewId];
-                }
-
-                // Manage History Array
-                if (pushHistory) {
-                    // Truncate future history if we navigated back then clicked a new link
-                    viewHistory.splice(currentHistoryIndex + 1);
-                    viewHistory.push(viewId);
-                    currentHistoryIndex++;
-                }
-
-                updateNavButtons();
-            }
-
-            function updateNavButtons() {
-                btnBack.disabled = currentHistoryIndex === 0;
-                btnForward.disabled = currentHistoryIndex === viewHistory.length - 1;
-
-                btnBack.classList.toggle('cursor-pointer', !btnBack.disabled);
-                btnForward.classList.toggle('cursor-pointer', !btnForward.disabled);
-            }
-
-            // Click Listeners for Sidebar
-            navButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (btn.dataset.view !== viewHistory[currentHistoryIndex]) {
-                        navigateTo(btn.dataset.view);
-                    }
-                });
-            });
-
-            // Click Listeners for Back/Next
-            btnBack.addEventListener('click', () => {
-                if (currentHistoryIndex > 0) {
-                    currentHistoryIndex--;
-                    navigateTo(viewHistory[currentHistoryIndex], false);
-                }
-            });
-
-            btnForward.addEventListener('click', () => {
-                if (currentHistoryIndex < viewHistory.length - 1) {
-                    currentHistoryIndex++;
-                    navigateTo(viewHistory[currentHistoryIndex], false);
-                }
-            });
-
-            // Exit / Logout Routing
-            document.getElementById('logout-btn').addEventListener('click', () => {
-                // Clear any stored secure tokens here
-                localStorage.removeItem('civic_jwt_token');
-                // Redirect to landing page (assuming index.html is the landing page file)
-                window.location.href = 'index.html';
-            });
-
-
-            /* =========================================
-               2. DATA INJECTION (Replacing Dummy Data)
-               ========================================= */
-            // Simulating an initial API fetch
-            const initData = {
-                kpis: {
-                    literacy: "Advanced",
-                    literacyTrend: "<i data-lucide='trending-up' class='w-4 h-4 mr-1'></i> 98%",
-                    townhalls: "3 Scheduled",
-                    townhallNext: "Next: 14 Days",
-                    petitions: "12 Active",
-                    services: "0 Requests",
-                    servicesStatus: "All clear"
-                },
-                initiatives: [
-                    {
-                        name: "Smart Parking Capacity Enforcement",
-                        desc: "Municipal Corporation of Delhi",
-                        pillar: "Public/Private",
-                        pillarColor: "rose",
-                        stage: "Committee Review",
-                        stageColor: "amber",
-                        tech: "Node.js, Leaflet API"
-                    },
-                    {
-                        name: "Smart Campus Attendance Tracker (SCAT)",
-                        desc: "Geofenced Wi-Fi & Face Auth System",
-                        pillar: "Services",
-                        pillarColor: "indigo",
-                        stage: "Active Development",
-                        stageColor: "emerald",
-                        tech: "React, Socket.io, JWT"
-                    }
-                ]
-            };
-
-            // Render KPIs
-            document.getElementById('kpi-literacy').innerText = initData.kpis.literacy;
-            document.getElementById('kpi-literacy-trend').innerHTML = initData.kpis.literacyTrend;
-            document.getElementById('kpi-townhall').innerText = initData.kpis.townhalls;
-            document.getElementById('kpi-townhall-next').innerText = initData.kpis.townhallNext;
-            document.getElementById('kpi-petitions').innerText = initData.kpis.petitions;
-            document.getElementById('kpi-services').innerText = initData.kpis.services;
-            document.getElementById('kpi-services-status').innerText = initData.kpis.servicesStatus;
-
-            // Render Table dynamically
-            const tbody = document.getElementById('initiatives-tbody');
-            tbody.innerHTML = ''; // clear loading state
-            initData.initiatives.forEach(proj => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="font-medium text-slate-900">${proj.name}</div>
-                            <div class="text-slate-500 text-xs mt-0.5">${proj.desc}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-${proj.pillarColor}-50 text-${proj.pillarColor}-700">
-                                ${proj.pillar}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-${proj.stageColor}-500 ${proj.stageColor === 'amber' ? 'animate-pulse' : ''}"></div>
-                                <span class="text-slate-700 font-medium">${proj.stage}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-slate-500 text-xs font-mono">${proj.tech}</td>
-                    </tr>
-                `;
-            });
-            lucide.createIcons(); // Re-render icons injected via HTML strings
-
-
-            /* =========================================
-               3. REAL-TIME ENGINE (WebSocket Simulation)
-               ========================================= */
-
-            // --- Notification System ---
-            const notifBtn = document.getElementById('notification-toggle');
-            const notifPanel = document.getElementById('notification-panel');
-            const notifBadge = document.getElementById('notif-badge');
-            const notifList = document.getElementById('notification-list');
-            const emptyNotifs = document.getElementById('empty-notifs');
-            let unreadCount = 0;
-
-            notifBtn.addEventListener('click', () => {
-                notifPanel.classList.toggle('hidden');
-                // Clear badge on open
-                if (!notifPanel.classList.contains('hidden')) {
-                    unreadCount = 0;
-                    notifBadge.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('clear-notifs').addEventListener('click', () => {
-                notifList.innerHTML = '<div class="p-8 text-center text-slate-400 text-sm italic" id="empty-notifs">Systems online. Awaiting data...</div>';
-                unreadCount = 0;
-                notifBadge.classList.add('hidden');
-            });
-
-            function pushNotification(title, message, type = 'info') {
-                if (document.getElementById('empty-notifs')) {
-                    document.getElementById('empty-notifs').remove();
-                }
-
-                const colors = {
-                    info: 'blue',
-                    warning: 'amber',
-                    critical: 'rose',
-                    success: 'emerald'
-                };
-                const color = colors[type];
-
-                const html = `
-                    <div class="px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors fade-in">
-                        <div class="flex items-start gap-3">
-                            <div class="mt-1 w-2 h-2 rounded-full bg-${color}-500 shadow-[0_0_8px_rgba(0,0,0,0.2)]"></div>
-                            <div>
-                                <p class="text-sm font-bold text-slate-800">${title}</p>
-                                <p class="text-xs text-slate-500 mt-0.5">${message}</p>
-                                <p class="text-[10px] text-slate-400 mt-1 font-mono">${new Date().toLocaleTimeString()}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                notifList.insertAdjacentHTML('afterbegin', html);
-
-                // Update Badge if panel is closed
-                if (notifPanel.classList.contains('hidden')) {
-                    unreadCount++;
-                    notifBadge.classList.remove('hidden');
-                }
-            }
-
-
-            // --- Interactive Map (Leaflet) ---
-            const map = L.map('civicMap', { zoomControl: false }).setView([28.6139, 77.2090], 13); // Centered on Delhi
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap',
-                maxZoom: 19
-            }).addTo(map);
-
-            // Delhi Smart Parking Zone Polygon
             const parkingZone = L.polygon([
-                [28.634, 77.215], [28.630, 77.222], [28.625, 77.218], [28.628, 77.212]
-            ], { color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.2, weight: 2 }).addTo(map);
-            parkingZone.bindPopup('<strong>MCD Parking Zone Alpha</strong><br>Status: <span class="text-blue-600">Available</span>');
+                [28.6180, 77.2100], [28.6200, 77.2150], [28.6150, 77.2200], [28.6100, 77.2150]
+            ], { color: '#0ea5e9', fillColor: '#0ea5e9', fillOpacity: 0.2, weight: 2 }).addTo(map);
+            parkingZone.bindPopup("<b>MCD Smart Parking Project</b><br>Sensor array active. Capacity: 84%");
 
-            // SCAT Geofence Circle (e.g., University Campus)
-            const campusGeofence = L.circle([28.609, 77.035], {
-                color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, radius: 500
-            }).addTo(map);
-            campusGeofence.bindPopup('<strong>SCAT Geofence</strong><br>Wi-Fi perimeter active.');
+            const campusGeofence = L.circle([28.6080, 77.0360], { color: '#10b981', fillColor: '#10b981', fillOpacity: 0.2, radius: 800 }).addTo(map); // NSUT Area
+            campusGeofence.bindPopup("<b>State University Campus</b><br>SCAT active. Live attendance feeds running.");
 
-            map.fitBounds([parkingZone.getBounds(), campusGeofence.getBounds()]);
-            const liveMarkers = L.layerGroup().addTo(map);
+            map.fitBounds(L.featureGroup([parkingZone, campusGeofence]).getBounds());
 
 
-            // --- Live Chart (Chart.js) ---
+            // Advanced Chart.js Graph (Democracy Engagement)
             const ctx = document.getElementById('engagementChart').getContext('2d');
-            let chartData = [12, 19, 15, 25, 22, 30];
-            let labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Live'];
+            let gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientBlue.addColorStop(0, 'rgba(14, 165, 233, 0.5)');
+            gradientBlue.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
 
             const engagementChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     datasets: [{
-                        label: 'Civic Interactions / hr',
-                        data: chartData,
+                        label: 'Citizen Votes Cast',
+                        data: [1200, 1900, 1500, 2200, 1800, 3100, 2800],
                         borderColor: '#0ea5e9',
-                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
+                        backgroundColor: gradientBlue,
+                        borderWidth: 3,
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#0ea5e9',
-                        pointRadius: 4
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', padding: 12, cornerRadius: 8 } },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
-                        x: { grid: { display: false }, border: { display: false } }
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } },
+                        y: { grid: { color: '#f1f5f9', drawBorder: false }, ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 10 } }
                     },
-                    animation: { duration: 400 }
+                    interaction: { mode: 'index', intersect: false }
+                }
+            });
+
+            /* =========================================================
+               1. THE MOCK BACKEND (Simulating Node.js / MongoDB)
+               ========================================================= */
+            // This object acts exactly like your Express API, persisting data and enforcing logic.
+            const BackendAPI = {
+                // Database Simulation
+                db: {
+                    user: { identityId: 'citizen-492-alpha' },
+                    settings: { alertsEnabled: true, telemetry: false, defaultView: 'dashboard' },
+                    session: { history: ['dashboard'], currentIndex: 0 }
+                },
+
+                // Simulated Network Delay for realism (300ms)
+                async delay() { return new Promise(res => setTimeout(res, 300)); },
+
+                // API: Get User Settings
+                async getSettings() {
+                    await this.delay();
+                    return { success: true, data: { user: this.db.user, preferences: this.db.settings } };
+                },
+
+                // API: Update User Settings (PUT Request)
+                async updateSettings(newPrefs) {
+                    await this.delay();
+                    this.db.settings = { ...this.db.settings, ...newPrefs };
+                    return { success: true, message: "Preferences updated in database." };
+                },
+
+                // API: Session Navigation Tracker (POST Request)
+                // In a real app, this tells the server to update the user's active session state.
+                async logNavigation(targetView) {
+                    await this.delay();
+
+                    // Truncate future history if navigating back then branching
+                    this.db.session.history.splice(this.db.session.currentIndex + 1);
+                    this.db.session.history.push(targetView);
+                    this.db.session.currentIndex++;
+
+                    return {
+                        success: true,
+                        historyIndex: this.db.session.currentIndex,
+                        historyLength: this.db.session.history.length
+                    };
+                },
+
+                // API: Handle Back/Forward requests from server
+                async goHistory(direction) {
+                    await this.delay();
+                    if (direction === 'back' && this.db.session.currentIndex > 0) {
+                        this.db.session.currentIndex--;
+                    } else if (direction === 'forward' && this.db.session.currentIndex < this.db.session.history.length - 1) {
+                        this.db.session.currentIndex++;
+                    }
+
+                    return {
+                        success: true,
+                        viewToLoad: this.db.session.history[this.db.session.currentIndex],
+                        historyIndex: this.db.session.currentIndex,
+                        historyLength: this.db.session.history.length
+                    };
+                }
+            };
+
+            /* =========================================================
+               2. FRONTEND CONTROLLER (Interacting with the Backend)
+               ========================================================= */
+            const views = ['dashboard', 'rights', 'democracy', 'petitions', 'services', 'collab', 'settings'];
+            const btnBack = document.getElementById('nav-back');
+            const btnForward = document.getElementById('nav-forward');
+            const navLoader = document.getElementById('nav-loader');
+
+            // --- Navigation Logic ---
+            async function requestViewChange(viewId, isHistoryAction = false, direction = null) {
+                // UI Loading State
+                navLoader.classList.remove('hidden');
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-50', 'pointer-events-none'));
+
+                let response;
+                try {
+                    // Call Backend API
+                    if (isHistoryAction) {
+                        response = await BackendAPI.goHistory(direction);
+                        viewId = response.viewToLoad; // Server tells us where to go based on session
+                    } else {
+                        response = await BackendAPI.logNavigation(viewId);
+                    }
+
+                    if (response.success) {
+                        renderView(viewId);
+
+                        // Update button disabled states based on Server response
+                        btnBack.disabled = response.historyIndex === 0;
+                        btnForward.disabled = response.historyIndex === response.historyLength - 1;
+
+                        // If navigating to settings, fetch the data!
+                        if (viewId === 'settings') loadSettingsFromBackend();
+                    }
+                } catch (err) {
+                    console.error("Backend Error:", err);
+                } finally {
+                    navLoader.classList.add('hidden');
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('opacity-50', 'pointer-events-none'));
+                }
+            }
+
+            function renderView(viewId) {
+                // Update Sidebar
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    if (btn.dataset.view === viewId) {
+                        btn.classList.replace('text-slate-300', 'text-civic-400');
+                        btn.classList.add('bg-civic-600/20');
+                        btn.classList.remove('hover:bg-slate-800', 'hover:text-white');
+                    } else {
+                        btn.classList.replace('text-civic-400', 'text-slate-300');
+                        btn.classList.remove('bg-civic-600/20');
+                        btn.classList.add('hover:bg-slate-800', 'hover:text-white');
+                    }
+                });
+
+                // Toggle DOM
+                const allViews = ['dashboard', 'rights', 'democracy', 'petitions', 'services', 'collab', 'settings', 'placeholder'];
+                allViews.forEach(id => {
+                    const el = document.getElementById(`view-${id}`);
+                    if (el) el.classList.add('hidden');
+                });
+
+                if (allViews.includes(viewId) && viewId !== 'placeholder') {
+                    const viewEl = document.getElementById(`view-${viewId}`);
+                    if (viewEl) viewEl.classList.remove('hidden');
+                } else {
+                    document.getElementById('view-placeholder').classList.remove('hidden');
+                    document.getElementById('placeholder-title').innerText = viewId.toUpperCase() + ' DATA';
+                }
+            }
+
+            // Bind Navigation Events
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => requestViewChange(btn.dataset.view));
+            });
+
+            document.getElementById('btn-settings').addEventListener('click', () => requestViewChange('settings'));
+
+            // Backend-driven Back/Next buttons
+            btnBack.addEventListener('click', () => requestViewChange(null, true, 'back'));
+            btnForward.addEventListener('click', () => requestViewChange(null, true, 'forward'));
+
+
+            /* =========================================================
+               3. SETTINGS MODULE LOGIC
+               ========================================================= */
+            async function loadSettingsFromBackend() {
+                const res = await BackendAPI.getSettings();
+                if (res.success) {
+                    document.getElementById('settings-identity').innerText = res.data.user.identityId;
+                    document.getElementById('pref-alerts').checked = res.data.preferences.alertsEnabled;
+                    document.getElementById('pref-telemetry').checked = res.data.preferences.telemetry;
+                    document.getElementById('pref-default-view').value = res.data.preferences.defaultView;
+                }
+            }
+
+            document.getElementById('settings-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-save-settings');
+                const ogText = btn.innerHTML;
+                btn.innerHTML = `<div class="w-4 h-4 border-2 border-white rounded-full loader"></div> Saving...`;
+
+                // Construct payload
+                const payload = {
+                    alertsEnabled: document.getElementById('pref-alerts').checked,
+                    telemetry: document.getElementById('pref-telemetry').checked,
+                    defaultView: document.getElementById('pref-default-view').value
+                };
+
+                // Send PUT request to backend
+                const res = await BackendAPI.updateSettings(payload);
+
+                if (res.success) {
+                    btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved`;
+                    btn.classList.replace('bg-civic-600', 'bg-emerald-500');
+                    lucide.createIcons();
+
+                    spawnNotification('Preferences Saved', 'Your database profile has been updated.', 'success');
+
+                    setTimeout(() => {
+                        btn.innerHTML = ogText;
+                        btn.classList.replace('bg-emerald-500', 'bg-civic-600');
+                        lucide.createIcons();
+                    }, 2000);
                 }
             });
 
 
-            // --- Event Simulation Engine ---
-            // This replaces the backend WebSocket connection to make the HTML fully standalone and "live"
-            let clock = 0;
+            /* =========================================================
+               4. EVENT ENGINE (Reacting to Backend Settings)
+               ========================================================= */
+            function spawnNotification(title, msg, type = 'info') {
+                // VERY IMPORTANT: Check database settings before showing an alert!
+                if (!BackendAPI.db.settings.alertsEnabled && type !== 'success') return;
 
+                const notifPanel = document.getElementById('notification-list');
+                const badge = document.getElementById('notif-badge');
+                if (document.getElementById('empty-notifs')) document.getElementById('empty-notifs').remove();
+
+                const color = type === 'success' ? 'emerald' : type === 'warning' ? 'amber' : 'civic';
+                notifPanel.insertAdjacentHTML('afterbegin', `<div class="px-4 py-3 border-b border-slate-100 fade-in"><div class="flex items-start gap-3"><div class="mt-1 w-2 h-2 rounded-full bg-${color}-500 shadow-md"></div><div><p class="text-sm font-bold text-slate-800">${title}</p><p class="text-xs text-slate-500 mt-0.5">${msg}</p></div></div></div>`);
+                badge.classList.remove('hidden');
+            }
+
+            document.getElementById('notification-toggle').addEventListener('click', () => {
+                document.getElementById('notification-panel').classList.toggle('hidden');
+                document.getElementById('notif-badge').classList.add('hidden');
+            });
+
+            /* =========================================
+               2. DIGITAL RIGHTS & DATA SOVEREIGNTY LOGIC
+               ========================================= */
+
+            // Centralized State for Consents
+            const privacyState = {
+                loc_parking: true,
+                loc_traffic: false,
+                bio_scat: true,
+                bio_cctv: false
+            };
+
+            const terminal = document.getElementById('audit-terminal');
+            const exposureLabel = document.getElementById('exposure-label');
+            const exposureRing = document.getElementById('exposure-ring');
+
+            // 1. Update Privacy Score based on State
+            function updatePrivacyHealth() {
+                const activeCount = Object.values(privacyState).filter(Boolean).length;
+
+                let level = "Low"; let color = "#10b981"; // Emerald
+                if (activeCount >= 2) { level = "Moderate"; color = "#f59e0b"; } // Amber
+                if (activeCount >= 3) { level = "High"; color = "#ef4444"; } // Rose
+
+                exposureLabel.innerHTML = `<span style="color: ${color}">${level}</span>`;
+                exposureRing.style.borderColor = color;
+            }
+
+            // 2. Bind Toggle Events
+            document.querySelectorAll('.privacy-tgl').forEach(tgl => {
+                tgl.addEventListener('change', (e) => {
+                    const key = e.target.id.replace('tgl-', '').replace('-', '_');
+                    privacyState[key] = e.target.checked;
+
+                    updatePrivacyHealth();
+
+                    // Terminal Feedback
+                    const action = e.target.checked ? 'GRANTED' : 'REVOKED';
+                    pushToTerminalLedger('USER_PREF', `Consent ${action} for rule: ${key}`);
+                });
+            });
+
+            // 3. Data Sovereignty Actions (Simulated Backend Tasks)
+            document.getElementById('btn-export-data').addEventListener('click', function () {
+                const btn = this; const ogHtml = btn.innerHTML;
+                btn.innerHTML = `<div class="w-4 h-4 border-2 rounded-full loader border-blue-600 border-t-transparent"></div> Packaging...`;
+                btn.disabled = true;
+
+                pushToTerminalLedger('SYS_CMD', 'Initiating encrypted data archive sequence...');
+
+                setTimeout(() => {
+                    btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Archive Ready`;
+                    btn.classList.replace('bg-blue-50', 'bg-emerald-50');
+                    btn.classList.replace('text-blue-700', 'text-emerald-700');
+                    btn.classList.replace('border-blue-200', 'border-emerald-200');
+                    lucide.createIcons();
+
+                    spawnNotification('Archive Complete', 'Your municipal data package is ready for download.', 'success');
+                    pushToTerminalLedger('SYS_CMD', 'Archive generated. File size: 14.2 MB.');
+
+                    setTimeout(() => { btn.innerHTML = ogHtml; btn.disabled = false; btn.className = 'w-full flex items-center justify-center gap-2 p-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-bold text-sm transition-colors border border-blue-200'; lucide.createIcons(); }, 3000);
+                }, 2000);
+            });
+
+            const btnPurge = document.getElementById('btn-purge-data');
+            if (btnPurge) {
+                btnPurge.addEventListener('click', function () {
+                    const btn = this; const ogHtml = btn.innerHTML;
+                    btn.innerHTML = `<div class="w-4 h-4 border-2 rounded-full loader border-rose-600 border-t-transparent"></div> Purging DB...`;
+                    btn.disabled = true;
+
+                    pushToTerminalLedger('SYS_CMD', 'Executing Right to be Forgotten protocol. Deleting cache...');
+
+                    setTimeout(() => {
+                        btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Data Purged`;
+                        lucide.createIcons();
+
+                        // Automatically turn off non-essential toggles to reflect the purge
+                        document.getElementById('tgl-loc-traffic').checked = false; privacyState.loc_traffic = false;
+                        document.getElementById('tgl-bio-cctv').checked = false; privacyState.bio_cctv = false;
+                        updatePrivacyHealth();
+
+                        spawnNotification('Data Purged', 'Non-essential municipal cache has been securely deleted.', 'warning');
+                        pushToTerminalLedger('SYS_CMD', 'Purge complete. 402 tracking records deleted permanently.');
+
+                        setTimeout(() => { btn.innerHTML = ogHtml; btn.disabled = false; }, 3000);
+                    }, 2500);
+                });
+            }
+
+            // 4. Terminal Ledger Formatter
+            function pushToTerminalLedger(source, details, authState = null) {
+                const time = new Date().toLocaleTimeString([], { hour12: false });
+                let authSpan = '';
+
+                if (authState === true) authSpan = `<span class="text-emerald-400 font-bold ml-2">| AUTH: GRANTED</span>`;
+                else if (authState === false) authSpan = `<span class="text-rose-400 font-bold ml-2">| AUTH: DENIED</span>`;
+
+                const html = `
+                    <div class="flex items-start gap-2 hover:bg-white/5 p-1 rounded transition-colors fade-in">
+                        <span class="text-slate-500 whitespace-nowrap">[${time}]</span>
+                        <div class="flex-1 break-all">
+                            <span class="text-blue-300">REQ: ${source}</span> 
+                            <span class="text-slate-400 mx-2">&gt;</span> 
+                            <span class="text-slate-300">${details}</span>
+                            ${authSpan}
+                        </div>
+                    </div>
+                `;
+
+                if (terminal) {
+                    terminal.insertAdjacentHTML('afterbegin', html);
+                    if (terminal.children.length > 50) terminal.lastElementChild.remove();
+                }
+            }
+
+
+            /* =========================================
+               2. DEMOCRACY HUB LOGIC (No Dummy HTML)
+               ========================================= */
+
+            let userInfluence = 4050;
+            const influenceEl = document.getElementById('influence-score');
+
+            function updateInfluence(points) {
+                userInfluence += points;
+                if (influenceEl) {
+                    influenceEl.innerHTML = `${userInfluence.toLocaleString()} <span class="text-xs text-slate-400 font-normal">pts</span>`;
+                    influenceEl.classList.add('scale-110', 'transition-transform');
+                    setTimeout(() => influenceEl.classList.remove('scale-110'), 200);
+                }
+            }
+
+            // --- A. LIVE POLLING ENGINE ---
+            const pollsContainer = document.getElementById('polls-container');
+
+            // Dynamic State: Generated by JS
+            const livePolls = [
+                {
+                    id: 'poll-1',
+                    tag: 'Infrastructure',
+                    title: 'Implement Dynamic Surge Pricing for Sector 4 Smart Parking',
+                    desc: 'To reduce congestion, applying a 15% surge fee when IoT parking sensors detect capacity over 95%.',
+                    votesYes: 14205,
+                    votesNo: 11840,
+                    userVoted: null // 'yes' or 'no'
+                },
+                {
+                    id: 'poll-2',
+                    tag: 'Privacy / Tech',
+                    title: 'Mandate SCAT Biometric Purge Every 48 Hours',
+                    desc: 'Require the Smart Campus Attendance Tracker to permanently delete facial geometry hashes within 48 hours of attendance logging.',
+                    votesYes: 28450,
+                    votesNo: 4120,
+                    userVoted: null
+                }
+            ];
+
+            function renderPolls() {
+                if (!pollsContainer) return;
+                pollsContainer.innerHTML = '';
+
+                livePolls.forEach(poll => {
+                    const totalVotes = poll.votesYes + poll.votesNo;
+                    const pctYes = totalVotes === 0 ? 0 : Math.round((poll.votesYes / totalVotes) * 100);
+                    const pctNo = totalVotes === 0 ? 0 : 100 - pctYes;
+
+                    const hasVoted = poll.userVoted !== null;
+
+                    const html = `
+                        <div class="bg-white p-6 rounded-2xl border ${hasVoted ? 'border-emerald-200 shadow-emerald-100/50' : 'border-slate-200'} shadow-sm transition-all relative overflow-hidden group">
+                            ${hasVoted ? '<div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>' : ''}
+                            
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
+                                    ${poll.tag}
+                                </span>
+                                <span class="text-xs font-bold text-slate-400 flex items-center gap-1">
+                                    <i data-lucide="users" class="w-3 h-3"></i> ${totalVotes.toLocaleString()}
+                                </span>
+                            </div>
+                            
+                            <h3 class="text-base font-bold text-slate-900 mb-1 pr-4 leading-tight">${poll.title}</h3>
+                            <p class="text-sm text-slate-500 mb-5 leading-relaxed">${poll.desc}</p>
+                            
+                            <div class="mb-5">
+                                <div class="flex justify-between text-xs font-bold mb-1.5">
+                                    <span class="text-emerald-600">SUPPORT (${pctYes}%)</span>
+                                    <span class="text-rose-500">OPPOSE (${pctNo}%)</span>
+                                </div>
+                                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                                    <div class="h-full bg-emerald-500 progress-bar relative" style="width: ${pctYes}%"></div>
+                                    <div class="h-full bg-rose-500 progress-bar relative" style="width: ${pctNo}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                ${hasVoted ? `
+                                    <div class="w-full text-center py-2.5 bg-emerald-50 text-emerald-700 text-sm font-bold rounded-xl flex items-center justify-center gap-2 border border-emerald-200 fade-in">
+                                        <i data-lucide="check-circle-2" class="w-5 h-5"></i> You voted to ${poll.userVoted.toUpperCase()}
+                                    </div>
+                                ` : `
+                                    <button onclick="castVote('${poll.id}', 'yes')" class="flex-1 py-2.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group-hover:border-slate-300">
+                                        <i data-lucide="thumbs-up" class="w-4 h-4"></i> Support
+                                    </button>
+                                    <button onclick="castVote('${poll.id}', 'no')" class="flex-1 py-2.5 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 group-hover:border-slate-300">
+                                        <i data-lucide="thumbs-down" class="w-4 h-4"></i> Oppose
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                    pollsContainer.insertAdjacentHTML('beforeend', html);
+                });
+                lucide.createIcons();
+            }
+
+            // Expose voting to global scope for onclick handler
+            window.castVote = (pollId, decision) => {
+                const poll = livePolls.find(p => p.id === pollId);
+                if (poll && !poll.userVoted) {
+                    poll.userVoted = decision;
+                    if (decision === 'yes') poll.votesYes++;
+                    else poll.votesNo++;
+
+                    updateInfluence(50); // Reward user for participating
+                    spawnNotification('Vote Recorded', 'Your vote has been secured on the municipal ledger.', 'success');
+                    pushToTownhall('citizen-492-alpha', `Cast a verified vote on mandate: ${poll.title.substring(0, 20)}...`, true);
+                    renderPolls();
+                }
+            };
+
+
+            // --- B. DIGITAL TOWNHALL ENGINE ---
+            const feedContainer = document.getElementById('townhall-feed');
+            const townhallForm = document.getElementById('townhall-form');
+            const townhallInput = document.getElementById('townhall-input');
+
+            // Pre-seed some messages
+            const initialMessages = [
+                { user: 'System', text: 'Assembly stream active. Encryption enabled.', isSystem: true, time: new Date(Date.now() - 60000) },
+                { user: 'Resident-881', text: 'The SCAT purge mandate is crucial. We cant have tracking data sitting on university servers indefinitely.', isSystem: false, time: new Date(Date.now() - 30000) },
+            ];
+
+            function pushToTownhall(user, text, isSystem = false, isUser = false) {
+                if (!feedContainer) return;
+                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                let uiClass = 'bg-white border-slate-200';
+                let userColor = 'text-slate-700';
+                let iconHtml = '<div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[8px] font-bold text-slate-500">R</div>';
+
+                if (isSystem) {
+                    uiClass = 'bg-emerald-50 border-emerald-100 border-l-2 border-l-emerald-500';
+                    userColor = 'text-emerald-700';
+                    iconHtml = '<i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600 mx-1"></i>';
+                } else if (isUser) {
+                    uiClass = 'bg-civic-50 border-civic-100 border-r-2 border-r-civic-500 ml-6';
+                    userColor = 'text-civic-700 font-bold';
+                    iconHtml = '<div class="w-6 h-6 rounded-full bg-civic-600 flex items-center justify-center text-[10px] font-bold text-white">C1</div>';
+                } else {
+                    // Random citizen icon
+                    iconHtml = `<div class="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[8px] font-bold text-white">${user.substring(0, 2).toUpperCase()}</div>`;
+                }
+
+                const html = `
+                    <div class="p-3 rounded-xl border ${uiClass} shadow-sm fade-in flex gap-3 text-sm">
+                        ${!isUser && !isSystem ? iconHtml : ''}
+                        ${isSystem ? iconHtml : ''}
+                        <div class="flex-1">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <span class="${userColor} text-xs font-bold">${user}</span>
+                                <span class="text-[10px] text-slate-400 font-mono">${timeStr}</span>
+                            </div>
+                            <p class="text-slate-600 leading-relaxed">${text}</p>
+                        </div>
+                        ${isUser ? iconHtml : ''}
+                    </div>
+                `;
+
+                feedContainer.insertAdjacentHTML('beforeend', html);
+                feedContainer.scrollTop = feedContainer.scrollHeight; // Auto-scroll to bottom
+                lucide.createIcons();
+
+                // Cleanup old messages
+                if (feedContainer.children.length > 20) feedContainer.firstElementChild.remove();
+            }
+
+            // Handle User Broadcasting Message
+            if (townhallForm) {
+                townhallForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const msg = townhallInput.value.trim();
+                    if (msg) {
+                        pushToTownhall('citizen-492-alpha', msg, false, true);
+                        townhallInput.value = '';
+                        updateInfluence(10); // Small reward for speaking up
+                    }
+                });
+            }
+
+
+            // --- INIT MODULE ---
+            renderPolls();
+            initialMessages.forEach(m => pushToTownhall(m.user, m.text, m.isSystem));
+
+
+            /* =========================================
+               2. PETITIONS & LAW LOGIC (Live Kanban)
+               ========================================= */
+
+            // DOM Elements
+            const colSignatures = document.getElementById('kanban-signatures');
+            const colReview = document.getElementById('kanban-review');
+            const colLaw = document.getElementById('kanban-law');
+            const lawFeedContainer = document.getElementById('law-feed-container');
+
+            // Initial State (Designed to actively process)
+            let petitionsState = [
+                {
+                    id: 'p-1',
+                    title: 'Expand Open Data APIs for MCD Parking',
+                    desc: 'Require real-time parking capacity data to be open source for community developers.',
+                    target: 10000,
+                    sigs: 9240, // Seeded close to target to show automatic transition
+                    stage: 'signatures', // 'signatures', 'review', 'law'
+                    reviewProgress: 0,
+                    userSigned: false,
+                    date: null
+                },
+                {
+                    id: 'p-2',
+                    title: 'EV Subsidy Expansion Program',
+                    desc: 'Expand municipal subsidies for commercial electric vehicles by 15%.',
+                    target: 15000,
+                    sigs: 15000,
+                    stage: 'review',
+                    reviewProgress: 65, // Partially through review
+                    userSigned: true,
+                    date: null
+                },
+                {
+                    id: 'p-3',
+                    title: 'Right to Disconnect (Municipal Workers)',
+                    desc: 'Protecting off-hour digital rights for city employees.',
+                    target: 5000,
+                    sigs: 5000,
+                    stage: 'law',
+                    reviewProgress: 100,
+                    userSigned: true,
+                    date: '2026-01-15'
+                }
+            ];
+
+            function renderPetitions() {
+                if (!colSignatures) return;
+                // Clear columns
+                colSignatures.innerHTML = '';
+                colReview.innerHTML = '';
+                colLaw.innerHTML = '';
+
+                petitionsState.forEach(pet => {
+                    let cardHtml = '';
+
+                    if (pet.stage === 'signatures') {
+                        const pct = Math.min(100, Math.round((pet.sigs / pet.target) * 100));
+                        cardHtml = `
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm fade-in group">
+                                <h3 class="font-bold text-slate-800 text-sm mb-1 leading-tight">${pet.title}</h3>
+                                <p class="text-xs text-slate-500 mb-3 line-clamp-2">${pet.desc}</p>
+                                
+                                <div class="mb-3">
+                                    <div class="flex justify-between text-[10px] font-bold mb-1">
+                                        <span class="text-blue-600">${pet.sigs.toLocaleString()} sigs</span>
+                                        <span class="text-slate-400">/ ${pet.target.toLocaleString()}</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-blue-500 progress-bar" style="width: ${pct}%"></div>
+                                    </div>
+                                </div>
+
+                                <button onclick="userSignPetition('${pet.id}')" class="w-full py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 ${pet.userSigned ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 cursor-default' : 'bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-300'}" ${pet.userSigned ? 'disabled' : ''}>
+                                    <i data-lucide="${pet.userSigned ? 'check-circle-2' : 'pen-tool'}" class="w-3 h-3"></i> 
+                                    ${pet.userSigned ? 'Signed' : 'Sign Mandate'}
+                                </button>
+                            </div>
+                        `;
+                        colSignatures.insertAdjacentHTML('beforeend', cardHtml);
+                    }
+                    else if (pet.stage === 'review') {
+                        cardHtml = `
+                            <div class="bg-white p-4 rounded-xl border-l-4 border-amber-400 shadow-sm fade-in">
+                                <h3 class="font-bold text-slate-800 text-sm mb-2 leading-tight">${pet.title}</h3>
+                                <div class="mb-1">
+                                    <div class="flex justify-between text-[10px] font-bold mb-1">
+                                        <span class="text-amber-600">Under Review</span>
+                                        <span class="text-slate-400">${pet.reviewProgress}%</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-amber-400 progress-bar" style="width: ${pet.reviewProgress}%"></div>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-2"><i data-lucide="info" class="w-3 h-3 inline mr-0.5"></i> Awaiting council vote.</p>
+                            </div>
+                        `;
+                        colReview.insertAdjacentHTML('beforeend', cardHtml);
+                    }
+                    else if (pet.stage === 'law') {
+                        cardHtml = `
+                            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 shadow-sm fade-in">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h3 class="font-bold text-emerald-900 text-sm leading-tight pr-2">${pet.title}</h3>
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 flex-shrink-0"></i>
+                                </div>
+                                <p class="text-[10px] text-emerald-600 font-bold mt-2 bg-emerald-100 px-2 py-1 rounded inline-block">
+                                    Enacted: ${pet.date}
+                                </p>
+                            </div>
+                        `;
+                        colLaw.insertAdjacentHTML('beforeend', cardHtml);
+                    }
+                });
+                lucide.createIcons();
+            }
+
+            // Expose User Signing to Global Scope
+            window.userSignPetition = (id) => {
+                const pet = petitionsState.find(p => p.id === id);
+                if (pet && !pet.userSigned) {
+                    pet.userSigned = true;
+                    pet.sigs++;
+                    pushToLawFeed(`SYS: User signature verified and added to "${pet.title.substring(0, 15)}..."`);
+                    renderPetitions();
+                }
+            };
+
+            // Handle Drafting Form
+            const draftPetitionForm = document.getElementById('draft-petition-form');
+            if (draftPetitionForm) {
+                draftPetitionForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const titleInput = document.getElementById('petition-title');
+                    const descInput = document.getElementById('petition-desc');
+
+                    const newPet = {
+                        id: 'p-' + Date.now(),
+                        title: titleInput.value,
+                        desc: descInput.value,
+                        target: 5000,
+                        sigs: 1, // Creator auto-signs
+                        stage: 'signatures',
+                        reviewProgress: 0,
+                        userSigned: true,
+                        date: null
+                    };
+
+                    petitionsState.unshift(newPet); // Add to beginning
+
+                    titleInput.value = ''; descInput.value = '';
+                    spawnNotification('Mandate Drafted', 'Your petition is now live and gathering signatures.', 'success');
+                    pushToLawFeed(`NEW MANDATE: "${newPet.title}" published to the municipal ledger.`, 'emerald');
+                    renderPetitions();
+                });
+            }
+
+            // Terminal/Ledger Feed formatting
+            function pushToLawFeed(text, highlightColor = null) {
+                if (!lawFeedContainer) return;
+                if (document.getElementById('law-feed-empty')) document.getElementById('law-feed-empty').remove();
+
+                const time = new Date().toLocaleTimeString([], { hour12: false });
+                let colorClass = 'text-slate-400';
+                let borderClass = 'border-slate-800';
+
+                if (highlightColor === 'amber') { colorClass = 'text-amber-400'; borderClass = 'border-amber-500/30 bg-amber-500/10'; }
+                if (highlightColor === 'emerald') { colorClass = 'text-emerald-400 font-bold'; borderClass = 'border-emerald-500/30 bg-emerald-500/10'; }
+                if (highlightColor === 'blue') { colorClass = 'text-blue-400'; borderClass = 'border-blue-500/30 bg-blue-500/10'; }
+
+                const html = `
+                    <div class="flex gap-2 p-2 rounded border-l-2 ${borderClass} fade-in">
+                        <span class="text-slate-600 select-none">[${time}]</span>
+                        <span class="${colorClass} leading-tight">${text}</span>
+                    </div>
+                `;
+                lawFeedContainer.insertAdjacentHTML('afterbegin', html);
+                if (lawFeedContainer.children.length > 20) lawFeedContainer.lastElementChild.remove();
+            }
+
+            // Initial Renders
+            renderPetitions();
+            pushToLawFeed('SESSION INITIATED. Connected to central legislative node.');
+
+
+            /* =========================================
+               4. CITIZEN SERVICES & UTILITIES (Logic)
+               ========================================= */
+            const pipelineContainer = document.getElementById('services-pipeline-container');
+            const countLabel = document.getElementById('active-sr-count');
+
+            // Icon mapper
+            const getIcon = (cat) => {
+                const map = { 'Infrastructure': 'cone', 'Sanitation': 'trash-2', 'Electrical': 'zap', 'Water': 'droplets', 'General': 'file-text' };
+                return map[cat] || 'file-text';
+            };
+
+            // The Live State (Seeded to demonstrate autonomous movement)
+            let serviceTickets = [
+                {
+                    id: 'SR-4892A',
+                    category: 'Electrical',
+                    desc: 'Streetlight pole #44 is sparking during rain.',
+                    stage: 1, // 1: Pending, 2: Dispatched, 3: Resolved
+                    statusText: 'Pending Triage',
+                    location: 'Sector 4, Main Ave',
+                    log: ['System: Request registered.']
+                }
+            ];
+
+            function renderPipeline() {
+                if (!pipelineContainer) return;
+                pipelineContainer.innerHTML = '';
+
+                if (serviceTickets.length === 0) {
+                    pipelineContainer.innerHTML = `<div class="p-10 text-center text-slate-400 italic bg-slate-50 rounded-xl border border-slate-100"><i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>No active grievances. Pipeline clear.</div>`;
+                    countLabel.innerText = "0";
+                    lucide.createIcons();
+                    return;
+                }
+
+                // Sort: Pending on top, Resolved on bottom
+                const sorted = [...serviceTickets].sort((a, b) => a.stage - b.stage);
+
+                sorted.forEach(t => {
+                    const isResolved = t.stage === 3;
+                    const isDispatched = t.stage === 2;
+
+                    let stageColor = 'amber'; let pct = '33%';
+                    if (isDispatched) { stageColor = 'blue'; pct = '66%'; }
+                    if (isResolved) { stageColor = 'emerald'; pct = '100%'; }
+
+                    const logHtml = t.log.map(l => `<div class="text-[10px] text-slate-500 font-mono border-l border-slate-200 pl-2 ml-1 mt-1">${l}</div>`).join('');
+
+                    const html = `
+                        <div class="bg-white p-5 rounded-2xl border ${isResolved ? 'border-emerald-200 bg-emerald-50/20' : 'border-slate-200'} shadow-sm transition-all group fade-in">
+                            
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-${stageColor}-50 text-${stageColor}-600 rounded-lg">
+                                        <i data-lucide="${getIcon(t.category)}" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-slate-900 text-sm">${t.id}</span>
+                                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded">${t.category}</span>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${t.location}</p>
+                                    </div>
+                                </div>
+                                ${isResolved ? `
+                                    <button onclick="dismissTicket('${t.id}')" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-md hover:bg-rose-50 transition-colors" title="Archive Ticket">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            <p class="text-sm text-slate-700 mb-4">${t.desc}</p>
+                            
+                            <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                <div class="flex justify-between text-xs font-bold mb-1.5">
+                                    <span class="text-${stageColor}-600 flex items-center gap-1">
+                                        ${isResolved ? '<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>' : '<i data-lucide="clock" class="w-3.5 h-3.5"></i>'}
+                                        ${t.statusText}
+                                    </span>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-3">
+                                    <div class="h-full bg-${stageColor}-500 progress-bar" style="width: ${pct}"></div>
+                                </div>
+                                ${logHtml}
+                            </div>
+                        </div>
+                    `;
+                    pipelineContainer.insertAdjacentHTML('beforeend', html);
+                });
+
+                countLabel.innerText = serviceTickets.length;
+                lucide.createIcons();
+            }
+
+            window.dismissTicket = (id) => {
+                serviceTickets = serviceTickets.filter(t => t.id !== id);
+                renderPipeline();
+            };
+
+            // --- SMART FORM LOGIC ---
+            const serviceForm = document.getElementById('service-request-form');
+            const srDescInput = document.getElementById('sr-desc');
+            const catSelect = document.getElementById('sr-category');
+            const autoBadge = document.getElementById('auto-tag-badge');
+
+            // Auto-tagging NLP Simulator
+            if (srDescInput) {
+                srDescInput.addEventListener('input', (e) => {
+                    const text = e.target.value.toLowerCase();
+                    let matched = false;
+
+                    const keywords = {
+                        'Infrastructure': ['pothole', 'road', 'bridge', 'sidewalk', 'crack'],
+                        'Sanitation': ['garbage', 'trash', 'drain', 'smell', 'waste'],
+                        'Electrical': ['light', 'wire', 'spark', 'power', 'pole'],
+                        'Water': ['pipe', 'leak', 'water', 'sewage', 'flood']
+                    };
+
+                    for (const [cat, words] of Object.entries(keywords)) {
+                        if (words.some(w => text.includes(w))) {
+                            catSelect.value = cat;
+                            autoBadge.innerText = `Auto-tagged: ${cat}`;
+                            autoBadge.classList.remove('hidden');
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) autoBadge.classList.add('hidden');
+                });
+            }
+
+            // Mock GPS Fetch
+            let mockGps = 'Manual Entry';
+            const btnFetchGps = document.getElementById('btn-fetch-gps');
+            if (btnFetchGps) {
+                btnFetchGps.addEventListener('click', function () {
+                    const btn = this; const txt = document.getElementById('gps-text');
+                    txt.innerText = "Locating...";
+                    btn.innerHTML = `<div class="w-3.5 h-3.5 border-2 rounded-full loader border-indigo-400 border-t-transparent"></div> <span id="gps-text">Locating...</span>`;
+
+                    setTimeout(() => {
+                        mockGps = `LAT: 28.61, LNG: 77.20`;
+                        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> <span class="text-emerald-300">Verified</span>`;
+                        lucide.createIcons();
+                    }, 1000);
+                });
+            }
+
+            // Submit Ticket
+            if (serviceForm) {
+                serviceForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const newId = `SR-${Math.floor(1000 + Math.random() * 9000)}X`;
+
+                    serviceTickets.unshift({
+                        id: newId,
+                        category: catSelect.value,
+                        desc: srDescInput.value,
+                        stage: 1,
+                        statusText: 'Pending Triage',
+                        location: mockGps,
+                        log: [`System: Request generated from mobile dashboard.`]
+                    });
+
+                    srDescInput.value = ''; autoBadge.classList.add('hidden');
+                    document.getElementById('btn-fetch-gps').innerHTML = `<i data-lucide="crosshair" class="w-3.5 h-3.5"></i> <span id="gps-text">Fetch GPS</span>`;
+                    mockGps = 'Manual Entry';
+
+                    spawnNotification('Grievance Logged', `Ticket ${newId} submitted to municipal node.`, 'success');
+                    renderPipeline();
+                });
+            }
+
+            // --- UTILITY TRANSACTION SIMULATOR ---
+            window.processUtility = (type, btnElement) => {
+                if (btnElement.disabled) return;
+
+                const uiIcon = btnElement.querySelector('.ui-icon');
+                const uiText = btnElement.querySelector('.ui-text');
+                const originalIcon = uiIcon.getAttribute('data-lucide');
+
+                // Loading State
+                btnElement.disabled = true;
+                btnElement.classList.add('bg-indigo-50', 'border-indigo-200');
+                uiIcon.outerHTML = `<div class="w-5 h-5 mb-2 border-2 rounded-full loader border-indigo-500 border-t-transparent ui-icon"></div>`;
+                uiText.innerText = "Processing...";
+
+                setTimeout(() => {
+                    // Success State
+                    btnElement.classList.replace('bg-indigo-50', 'bg-emerald-50');
+                    btnElement.classList.replace('border-indigo-200', 'border-emerald-200');
+                    btnElement.classList.replace('text-slate-600', 'text-emerald-700');
+                    btnElement.querySelector('.ui-icon').outerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 mb-2 text-emerald-500 ui-icon"></i>`;
+                    uiText.innerText = "Success";
+                    lucide.createIcons();
+
+                    spawnNotification('Transaction Complete', `${type} processed securely via Civic Gateway.`, 'success');
+
+                    // Reset after 3 seconds
+                    setTimeout(() => {
+                        btnElement.disabled = false;
+                        btnElement.className = "utility-btn flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all text-slate-600 relative overflow-hidden group";
+                        btnElement.querySelector('.ui-icon').outerHTML = `<i data-lucide="${originalIcon}" class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500 transition-colors ui-icon"></i>`;
+                        uiText.innerText = type;
+                        lucide.createIcons();
+                    }, 3000);
+
+                }, 1500);
+            };
+
+            // Init
+            renderPipeline();
+
+            /* =========================================
+               5. PUBLIC / PRIVATE COLLAB: STATE & MAP
+               ========================================= */
+
+            // State tracking for the two projects
+            let deploymentState = {
+                mcd: { nodes: 1240, target: 1500, costPerNode: 8450 },
+                scat: { nodes: 410, target: 600, costPerNode: 12200 }
+            };
+
+            // Initialize Collab Leaflet Map (Centered around Delhi/NSUT)
+            const collabMap = L.map('collab-map', { zoomControl: false }).setView([28.62, 77.10], 12);
+            L.control.zoom({ position: 'bottomright' }).addTo(collabMap);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO' // Dark mode map fits the "infrastructure" theme
+            }).addTo(collabMap);
+
+            // Layer groups to hold the dynamically spawned nodes
+            const mcdLayer = L.layerGroup().addTo(collabMap);
+            const scatLayer = L.layerGroup().addTo(collabMap);
+
+            function spawnMapNode(type) {
+                // Generate random coordinates around the map center
+                const lat = 28.62 + (Math.random() - 0.5) * 0.1;
+                const lng = 77.10 + (Math.random() - 0.5) * 0.1;
+
+                const color = type === 'mcd' ? 'blue' : 'emerald';
+
+                const icon = L.divIcon({
+                    className: 'custom-ping',
+                    html: `<div class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-${color}-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-${color}-500 border border-white"></span></div>`,
+                    iconSize: [12, 12]
+                });
+
+                const marker = L.marker([lat, lng], { icon });
+
+                if (type === 'mcd') marker.addTo(mcdLayer);
+                else marker.addTo(scatLayer);
+
+                // Fade out old nodes to keep map clean
+                setTimeout(() => {
+                    if (type === 'mcd') mcdLayer.removeLayer(marker);
+                    else scatLayer.removeLayer(marker);
+                }, 10000);
+            }
+
+            function updateFinancials() {
+                const formatMoney = (val) => '₹' + (val / 1000000).toFixed(2) + 'M';
+
+                // MCD Math
+                const mcdBurn = deploymentState.mcd.nodes * deploymentState.mcd.costPerNode;
+                const mcdPct = Math.round((deploymentState.mcd.nodes / deploymentState.mcd.target) * 100);
+                document.getElementById('mcd-burn-val').innerText = formatMoney(mcdBurn);
+                document.getElementById('mcd-burn-pct').innerText = `${mcdPct}%`;
+                document.getElementById('mcd-burn-bar').style.width = `${mcdPct}%`;
+
+                // SCAT Math
+                const scatBurn = deploymentState.scat.nodes * deploymentState.scat.costPerNode;
+                const scatPct = Math.round((deploymentState.scat.nodes / deploymentState.scat.target) * 100);
+                document.getElementById('scat-burn-val').innerText = formatMoney(scatBurn);
+                document.getElementById('scat-burn-pct').innerText = `${scatPct}%`;
+                document.getElementById('scat-burn-bar').style.width = `${scatPct}%`;
+            }
+
+            /* =========================================
+               6. VENDOR PROCUREMENT ENGINE
+               ========================================= */
+            const procurementBoard = document.getElementById('procurement-board');
+            let bids = [];
+
+            function generateVendorBid() {
+                const vendors = ['VisionTech', 'InfraCore IoT', 'Delhi Cloud Systems', 'SecureNet Data', 'Apex Sensors'];
+                const contracts = ['SCAT Server Expansion', 'MCD LoRaWAN Gateway', 'Biometric Hash Audit', 'Parking App UI Update'];
+
+                const newBid = {
+                    id: 'BID-' + Math.floor(1000 + Math.random() * 9000),
+                    vendor: vendors[Math.floor(Math.random() * vendors.length)],
+                    contract: contracts[Math.floor(Math.random() * contracts.length)],
+                    amount: '₹' + (Math.random() * 5 + 0.5).toFixed(1) + 'M',
+                    status: 'Evaluating' // 'Evaluating', 'Accepted'
+                };
+
+                bids.unshift(newBid);
+                if (bids.length > 5) bids.pop(); // Keep list short
+
+                renderProcurement();
+            }
+
+            function renderProcurement() {
+                if (bids.length > 0 && document.querySelector('#procurement-board .italic')) {
+                    procurementBoard.innerHTML = '';
+                }
+
+                procurementBoard.innerHTML = bids.map(bid => `
+                    <div class="p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors fade-in flex justify-between items-center group">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] font-bold bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">${bid.id}</span>
+                                <span class="text-xs font-bold text-civic-700">${bid.vendor}</span>
+                            </div>
+                            <p class="text-xs text-slate-600 font-medium">${bid.contract}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-black text-slate-800">${bid.amount}</p>
+                            <p class="text-[10px] font-bold text-amber-500 flex items-center justify-end gap-1 mt-0.5">
+                                <i data-lucide="loader" class="w-3 h-3 animate-spin"></i> ${bid.status}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+
+
+            /* =========================================
+               7. TERMINAL LOGGING ENGINE
+               ========================================= */
+            const collabTerminal = document.getElementById('api-terminal-container');
+
+            function terminalLog(type, source, target, status, payload = null) {
+                const time = new Date().toISOString().split('T')[1].substring(0, 12);
+
+                let statusColor = 'text-slate-400';
+                if (status.includes('200') || status.includes('202')) statusColor = 'text-emerald-400 term-glow';
+                if (status.includes('403') || status.includes('500')) statusColor = 'text-rose-400 term-glow';
+
+                let payloadHtml = '';
+                if (payload) {
+                    payloadHtml = `<div class="pl-4 text-slate-500 mt-0.5">{ "data": "${payload}", "enc": "sha256" }</div>`;
+                }
+
+                const html = `
+                    <div class="mb-1 fade-in font-mono leading-tight">
+                        <span class="text-slate-600">[${time}]</span> 
+                        <span class="text-purple-400 font-bold">${type}</span> 
+                        <span class="text-slate-300">${source}</span> 
+                        <span class="text-slate-500">-></span> 
+                        <span class="text-amber-300">${target}</span> 
+                        <span class="${statusColor} font-bold ml-1">[${status}]</span>
+                        ${payloadHtml}
+                    </div>
+                `;
+
+                collabTerminal.insertAdjacentHTML('beforeend', html);
+                collabTerminal.scrollTop = collabTerminal.scrollHeight;
+                if (collabTerminal.children.length > 40) collabTerminal.firstElementChild.remove();
+            }
+
+            window.terminalPing = (system) => {
+                if (system === 'SCAT') terminalLog('POST', 'manual.admin', 'scat.visiontech.api', '202 ACCEPTED', 'force_sync_biometrics');
+                if (system === 'MCD') terminalLog('GET', 'manual.admin', 'mcd.smartparking.gov', '200 OK', 'fetch_capacity_matrix');
+                spawnNotification('Manual Override', `${system} API successfully pinged.`, 'success');
+            };
+
+            // Init State
+            updateFinancials();
+            setTimeout(generateVendorBid, 2000);
+
+
+            /* =========================================
+               8. THE MASTER EVENT ENGINE (Simulating Community & APIs)
+               ========================================= */
+            let clock = 0;
+            const viewContainers = {
+                'democracy': document.getElementById('view-democracy'),
+                'rights': document.getElementById('view-rights'),
+                'petitions': document.getElementById('view-petitions'),
+                'services': document.getElementById('view-services'),
+                'collab': document.getElementById('view-collab')
+            };
+
+            // We use standard setInterval to mimic incoming WebSocket traffic from the backend
             setInterval(() => {
                 clock++;
 
-                // Event 1: SCAT Check-in (Every 4 seconds)
-                if (clock % 4 === 0) {
-                    // Generate random point inside geofence
-                    const lat = 28.609 + (Math.random() - 0.5) * 0.006;
-                    const lng = 77.035 + (Math.random() - 0.5) * 0.006;
+                // -- A. DIGITAL RIGHTS SIMULATIONS --
+                if (viewContainers['rights'] && !viewContainers['rights'].classList.contains('hidden')) {
 
-                    const icon = L.divIcon({
-                        className: 'bg-emerald-500 w-3 h-3 rounded-full border-2 border-white shadow-lg animate-ping',
-                        iconSize: [12, 12]
+                    // SCAT Node Biometric Ping (Every 5 seconds)
+                    if (clock % 5 === 0) {
+                        const isGranted = privacyState.bio_scat;
+                        pushToTerminalLedger('SCAT_Node_Gateway', 'Face geometry hash matching...', isGranted);
+                    }
+
+                    // MCD Parking GPS Ping (Every 8 seconds)
+                    if (clock % 8 === 0) {
+                        const isGranted = privacyState.loc_parking;
+                        pushToTerminalLedger('MCD_Parking_App', 'Fetch GPS Coordinate [LAT: 28.6, LNG: 77.2]', isGranted);
+                    }
+
+                    // Background Traffic Analytics (Random)
+                    if (clock % 12 === 0 && Math.random() > 0.4) {
+                        const isGranted = privacyState.loc_traffic;
+                        pushToTerminalLedger('Traffic_Analytics_Bot', 'Requesting anonymized route history', isGranted);
+                    }
+                }
+
+                // If the user turns OFF alerts in Settings, this notification will be blocked by the logic above.
+                if (Math.random() > 0.8) {
+                    spawnNotification('Municipal API Ping', 'Background sync completed.', 'civic');
+                }
+
+                // -- B. DEMOCRACY HUB SIMULATIONS --
+                if (viewContainers['democracy'] && !viewContainers['democracy'].classList.contains('hidden')) {
+
+                    // EVENT: Continuous Community Voting Simulation
+                    if (clock % 2 === 0) {
+                        let renderNeeded = false;
+
+                        livePolls.forEach(poll => {
+                            // Add slight randomness to vote distribution based on existing trend
+                            const total = poll.votesYes + poll.votesNo;
+                            const ratio = total > 0 ? poll.votesYes / total : 0.5;
+
+                            // Simulate 1 to 5 new votes arriving
+                            const newVotes = Math.floor(Math.random() * 5) + 1;
+
+                            for (let i = 0; i < newVotes; i++) {
+                                if (Math.random() < ratio) poll.votesYes++;
+                                else poll.votesNo++;
+                            }
+                            renderNeeded = true;
+                        });
+
+                        if (renderNeeded) renderPolls();
+                    }
+
+                    // EVENT: Simulated Townhall Chatter
+                    if (clock % 12 === 0 && Math.random() > 0.4) {
+                        const randomCitizens = ['Resident-11A', 'Node-84X', 'Citizen-K9', 'Delegate-MCD'];
+                        const randomMessages = [
+                            "Agreed. We need open APIs for the parking data.",
+                            "The surge pricing might hurt local businesses in Sector 4.",
+                            "Has anyone reviewed the technical audit for the SCAT nodes?",
+                            "I fully support mandate #2. Privacy first.",
+                            "If the sensors are accurate, dynamic pricing makes sense to me."
+                        ];
+
+                        const user = randomCitizens[Math.floor(Math.random() * randomCitizens.length)];
+                        const msg = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+
+                        pushToTownhall(user, msg, false, false);
+                    }
+                }
+
+                // -- C. PETITIONS & LAW SIMULATIONS --
+                if (viewContainers['petitions'] && !viewContainers['petitions'].classList.contains('hidden')) {
+                    let needsRender = false;
+
+                    petitionsState.forEach(pet => {
+
+                        // 1. Process Grassroots Signatures
+                        if (pet.stage === 'signatures') {
+                            // Simulate network signing (random bursts)
+                            if (Math.random() > 0.4) {
+                                pet.sigs += Math.floor(Math.random() * 25) + 1;
+                                needsRender = true;
+                            }
+
+                            // Trigger Milestone: Target Reached!
+                            if (pet.sigs >= pet.target) {
+                                pet.sigs = pet.target; // Cap it
+                                pet.stage = 'review';
+                                pet.reviewProgress = 0;
+
+                                spawnNotification('Petition Milestone', `"${pet.title}" moved to Committee Review.`, 'success');
+                                pushToLawFeed(`MILESTONE: "${pet.title}" reached ${pet.target.toLocaleString()} signatures. Advancing to Review phase.`, 'amber');
+                                needsRender = true;
+                            }
+                        }
+
+                        // 2. Process Committee Review Progress
+                        else if (pet.stage === 'review') {
+                            // Slower progression to simulate bureaucratic time
+                            if (Math.random() > 0.7) {
+                                pet.reviewProgress += Math.floor(Math.random() * 3) + 1;
+                                needsRender = true;
+                            }
+
+                            // Trigger Milestone: Passed into Law
+                            if (pet.reviewProgress >= 100) {
+                                pet.reviewProgress = 100;
+                                pet.stage = 'law';
+                                pet.date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+                                spawnNotification('New Law Codified!', `"${pet.title}" is now active legislation.`, 'success');
+                                pushToLawFeed(`CODIFIED: The assembly has passed "${pet.title}" into law.`, 'emerald');
+                                needsRender = true;
+                            }
+                        }
                     });
 
-                    const marker = L.marker([lat, lng], { icon }).addTo(liveMarkers);
-                    setTimeout(() => liveMarkers.removeLayer(marker), 3000); // fade out
+                    // 3. Random chatter in the Legislative Tracker
+                    if (clock % 10 === 0 && Math.random() > 0.5) {
+                        const randomLogs = [
+                            "Council Member verified signature block for District 4.",
+                            "System diagnostic: Smart Contract execution nominal.",
+                            "Public viewing node connected: 42 users active.",
+                            "Review committee requested data privacy impact assessment."
+                        ];
+                        pushToLawFeed(`SYS: ${randomLogs[Math.floor(Math.random() * randomLogs.length)]}`);
+                    }
 
-                    // Small chance to trigger a notification
-                    if (Math.random() > 0.8) {
-                        pushNotification("SCAT Batch Processed", "Geofenced attendance verified for 45 identities.", "success");
+                    if (needsRender) renderPetitions();
+                }
+
+                // -- D. CITIZEN SERVICES SIMULATION --
+                if (viewContainers['services'] && !viewContainers['services'].classList.contains('hidden')) {
+                    let needsRender = false;
+
+                    // Iterate through active tickets and give them a chance to advance
+                    serviceTickets.forEach(t => {
+
+                        // Stage 1 (Pending) -> Stage 2 (Dispatched)
+                        if (t.stage === 1 && Math.random() > 0.8) {
+                            t.stage = 2;
+                            t.statusText = 'Dispatched to Ward Unit';
+                            t.log.push(`Dispatcher: Assigned to Field Team Alpha.`);
+                            spawnNotification('SLA Update', `Ticket ${t.id} has been dispatched.`, 'info');
+                            needsRender = true;
+                        }
+
+                        // Stage 2 (Dispatched) -> Stage 3 (Resolved)
+                        else if (t.stage === 2 && Math.random() > 0.85) {
+                            t.stage = 3;
+                            t.statusText = 'Resolution Confirmed';
+                            t.log.push(`Field Team: Issue rectified. Closing ticket.`);
+                            spawnNotification('Issue Resolved', `Ticket ${t.id} has been closed by the field team.`, 'success');
+                            needsRender = true;
+                        }
+                    });
+
+                    if (needsRender) renderPipeline();
+                }
+
+                // -- E. PUBLIC / PRIVATE COLLAB SIMULATION --
+                if (viewContainers['collab'] && !viewContainers['collab'].classList.contains('hidden')) {
+
+                    // EVENT: API Terminal Pings
+                    if (clock % 2 === 0) {
+                        const rand = Math.random();
+                        if (rand < 0.4) {
+                            terminalLog('POST', 'scat.node.' + Math.floor(Math.random() * 900), 'university.auth.db', '202 ACCEPTED', 'face_geometry_hash');
+                        } else if (rand < 0.8) {
+                            const capStatus = Math.random() > 0.85 ? '403 FORBIDDEN' : '200 OK';
+                            terminalLog('GET', 'mcd.parking.sensor', 'central.capacity.api', capStatus, 'lot_status_update');
+                        } else {
+                            terminalLog('AUTH', 'civichub.gateway', 'redis.cache', '200 OK');
+                        }
+                    }
+
+                    // EVENT: Node Deployment & Map Updates
+                    if (clock % 4 === 0) {
+                        if (Math.random() > 0.5 && deploymentState.mcd.nodes < deploymentState.mcd.target) {
+                            deploymentState.mcd.nodes++;
+                            spawnMapNode('mcd');
+                            updateFinancials();
+                        }
+                        if (Math.random() > 0.7 && deploymentState.scat.nodes < deploymentState.scat.target) {
+                            deploymentState.scat.nodes++;
+                            spawnMapNode('scat');
+                            updateFinancials();
+                        }
+                    }
+
+                    // EVENT: Vendor Procurement Simulation
+                    if (clock % 15 === 0 && Math.random() > 0.4) {
+                        generateVendorBid();
                     }
                 }
 
-                // Event 2: Parking Capacity Breach (Every 15 seconds)
-                if (clock % 15 === 0) {
-                    const isFull = Math.random() > 0.5;
-                    if (isFull) {
-                        parkingZone.setStyle({ color: '#ef4444', fillColor: '#ef4444' });
-                        parkingZone.setPopupContent('<strong>MCD Parking Zone Alpha</strong><br>Status: <span class="text-rose-600 font-bold">FULL - Enforcement Alerted</span>');
-                        pushNotification("Parking Capacity Breach", "Zone Alpha has exceeded 95% capacity.", "critical");
-                    } else {
-                        parkingZone.setStyle({ color: '#3b82f6', fillColor: '#3b82f6' });
-                        parkingZone.setPopupContent('<strong>MCD Parking Zone Alpha</strong><br>Status: <span class="text-blue-600">Available</span>');
-                    }
-                }
+            }, 1000); // 1 Second Tick
 
-                // Event 3: Chart Data Update (Every 6 seconds)
-                if (clock % 6 === 0) {
-                    const newValue = chartData[chartData.length - 1] + (Math.floor(Math.random() * 10) - 4);
-                    chartData.push(Math.max(10, newValue)); // keep above 10
-                    chartData.shift(); // remove oldest
-
-                    document.getElementById('chart-last-updated').innerText = `Live: ${new Date().toLocaleTimeString()}`;
-                    engagementChart.update();
-                }
-
-                // Event 4: Petition Milestone (Random, infrequent)
-                if (clock % 20 === 0 && Math.random() > 0.5) {
-                    pushNotification("Petition Milestone", "New digital rights petition reached 10,000 signatures.", "info");
-
-                    // Dynamically update the KPI text with a flash effect
-                    const petKpi = document.getElementById('kpi-petitions');
-                    petKpi.innerText = "13 Active";
-                    petKpi.classList.add('text-amber-500');
-                    setTimeout(() => petKpi.classList.remove('text-amber-500'), 1000);
-                }
-
-            }, 1000); // Tick every 1 second
+            const btnPing = document.getElementById('btn-ping-network');
+            if (btnPing) {
+                btnPing.addEventListener('click', () => {
+                    const term = document.getElementById('api-terminal');
+                    if (term) term.insertAdjacentHTML('afterbegin', `<div class="text-yellow-400">> [MANUAL PING] Broadcast sent to all nodes.</div>`);
+                    spawnNotification('Network Ping', 'Manual broadcast completed.', 'success');
+                });
+            }
 
         });
     </script>
