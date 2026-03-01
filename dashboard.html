@@ -4,25 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicHub Dashboard</title>
+    <title>CivicHub | Live Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Leaflet CSS for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { civic: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for dropdowns */
         ::-webkit-scrollbar {
             width: 6px;
-            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
@@ -31,37 +34,30 @@
 
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 10px;
+            border-radius: 4px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
         }
 
-        /* Fix for Leaflet tile visibility in Tailwind */
-        .leaflet-container {
-            z-index: 10;
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        civic: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' }
-                    }
-                }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-    </script>
+    </style>
 </head>
 
 <body class="bg-slate-50 font-sans antialiased text-slate-800 h-screen flex overflow-hidden">
 
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex transition-all duration-300">
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex transition-all duration-300 z-20">
         <div class="h-16 flex items-center px-6 border-b border-slate-800">
             <div class="bg-civic-600 text-white p-1.5 rounded-lg mr-3 shadow-md">
                 <i data-lucide="landmark" class="w-5 h-5"></i>
@@ -69,582 +65,653 @@
             <span class="font-bold text-xl text-white tracking-tight">CivicHub</span>
         </div>
 
-        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="sidebar-nav">
             <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-4">Overview</p>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 bg-civic-600/10 text-civic-400 rounded-lg transition-colors">
+            <button data-view="dashboard"
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 bg-civic-600/20 text-civic-400 rounded-lg transition-colors">
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 <span class="font-medium">Dashboard</span>
-            </a>
+            </button>
 
             <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">The 5 Pillars</p>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="shield-check" class="w-5 h-5 text-blue-400 group-hover:text-blue-300"></i>
+            <button data-view="rights"
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
+                <i data-lucide="shield-check" class="w-5 h-5 text-blue-400"></i>
                 <span class="font-medium">Digital Rights</span>
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="users" class="w-5 h-5 text-emerald-400 group-hover:text-emerald-300"></i>
+            </button>
+            <button data-view="democracy"
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
+                <i data-lucide="users" class="w-5 h-5 text-emerald-400"></i>
                 <span class="font-medium">Democracy Hub</span>
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="scroll-text" class="w-5 h-5 text-amber-400 group-hover:text-amber-300"></i>
+            </button>
+            <button data-view="petitions"
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
+                <i data-lucide="scroll-text" class="w-5 h-5 text-amber-400"></i>
                 <span class="font-medium">Petitions & Law</span>
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="smartphone" class="w-5 h-5 text-indigo-400 group-hover:text-indigo-300"></i>
+            </button>
+            <button data-view="services"
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
+                <i data-lucide="smartphone" class="w-5 h-5 text-indigo-400"></i>
                 <span class="font-medium">Citizen Services</span>
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
-                <i data-lucide="handshake" class="w-5 h-5 text-rose-400 group-hover:text-rose-300"></i>
+            </button>
+            <button data-view="collab"
+                class="nav-btn w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg transition-colors group">
+                <i data-lucide="handshake" class="w-5 h-5 text-rose-400"></i>
                 <span class="font-medium">Public/Private Collab</span>
-            </a>
+            </button>
         </nav>
 
         <div class="p-4 border-t border-slate-800">
-            <div class="flex items-center gap-3 cursor-pointer hover:bg-slate-800 p-2 rounded-lg transition-colors">
-                <img src="https://ui-avatars.com/api/?name=Citizen+One&background=0D8ABC&color=fff" alt="Profile"
-                    class="w-8 h-8 rounded-full">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-white truncate">Logged in as</p>
-                    <p class="text-xs text-slate-400 truncate">Verified Citizen Identity</p>
+            <button id="logout-btn"
+                class="w-full flex items-center justify-between hover:bg-rose-500/10 hover:text-rose-400 p-2 rounded-lg transition-colors group">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-sm">
+                        C1
+                    </div>
+                    <div class="text-left flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate group-hover:text-rose-400 transition-colors">
+                            Logged in as</p>
+                        <p class="text-xs text-slate-400 truncate">Verified Citizen Identity</p>
+                    </div>
                 </div>
-                <i data-lucide="log-out" class="w-4 h-4 text-slate-400"></i>
-            </div>
+                <i data-lucide="log-out" class="w-4 h-4 text-slate-400 group-hover:text-rose-400 transition-colors"></i>
+            </button>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30">
             <div class="flex items-center gap-4 flex-1">
                 <button class="md:hidden text-slate-500 hover:text-slate-700">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
-                <div class="relative w-full max-w-md hidden sm:block">
+
+                <div class="hidden sm:flex items-center gap-1 border-r border-slate-200 pr-4">
+                    <button id="nav-back"
+                        class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-not-allowed"
+                        disabled>
+                        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                    </button>
+                    <button id="nav-forward"
+                        class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-not-allowed"
+                        disabled>
+                        <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <div class="relative w-full max-w-md hidden lg:block">
                     <i data-lucide="search"
                         class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                     <input type="text" placeholder="Search bills, services, or public data..."
                         class="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:border-civic-500 focus:ring-2 focus:ring-civic-200 transition-all outline-none">
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+
+            <div class="flex items-center gap-4 relative">
+                <button id="notification-toggle"
+                    class="relative p-2 text-slate-500 hover:bg-slate-100 hover:text-civic-600 rounded-full transition-colors focus:outline-none">
                     <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span
-                        class="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
+                    <span id="notif-badge"
+                        class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
                 </button>
+
+                <div id="notification-panel"
+                    class="hidden absolute top-12 right-0 w-80 bg-white border border-slate-200 shadow-2xl rounded-xl overflow-hidden z-50 fade-in">
+                    <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <span class="font-bold text-sm text-slate-800">Live Alerts</span>
+                        <button id="clear-notifs" class="text-xs text-civic-600 hover:text-civic-800 font-medium">Clear
+                            All</button>
+                    </div>
+                    <div id="notification-list" class="max-h-80 overflow-y-auto">
+                        <div class="p-8 text-center text-slate-400 text-sm italic" id="empty-notifs">
+                            Systems online. Awaiting data...
+                        </div>
+                    </div>
+                </div>
+
                 <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-6 lg:p-8">
-            <div class="max-w-7xl mx-auto space-y-8">
+        <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-50" id="main-view-container">
 
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Civic Dashboard</h1>
-                    <p class="text-slate-500 mt-1">Your unified portal for governance, services, and community impact.
-                    </p>
+            <div id="view-dashboard" class="max-w-7xl mx-auto space-y-8 fade-in">
+
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900" id="page-title">Civic Dashboard</h1>
+                        <p class="text-slate-500 mt-1">Your unified portal for governance, services, and community
+                            impact.</p>
+                    </div>
+                    <div
+                        class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Live Connection Active
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div
-                        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="shield-check"
                                     class="w-6 h-6"></i></div>
-                            <span class="flex items-center text-emerald-600 text-sm font-medium"><i
-                                    data-lucide="trending-up" class="w-4 h-4 mr-1"></i> 98%</span>
+                            <span class="flex items-center text-emerald-600 text-sm font-medium"
+                                id="kpi-literacy-trend">--</span>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Digital Literacy Score</h3>
-                        <p id="kpi-literacy-score" class="text-2xl font-bold text-slate-900 mt-1">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-literacy">Loading...</p>
                     </div>
-                    <div
-                        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="vote"
                                     class="w-6 h-6"></i></div>
-                            <span class="flex items-center text-emerald-600 text-sm font-medium">Next: 14 Days</span>
+                            <span class="flex items-center text-emerald-600 text-sm font-medium"
+                                id="kpi-townhall-next">--</span>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Upcoming Townhalls</h3>
-                        <p id="kpi-townhalls" class="text-2xl font-bold text-slate-900 mt-1">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-townhall">Loading...</p>
                     </div>
-                    <div
-                        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="pen-tool"
                                     class="w-6 h-6"></i></div>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Petitions Supported</h3>
-                        <p id="kpi-petitions" class="text-2xl font-bold text-slate-900 mt-1">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-petitions">Loading...</p>
                     </div>
-                    <div
-                        class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="file-check-2"
                                     class="w-6 h-6"></i></div>
-                            <span id="kpi-services-status"
-                                class="flex items-center text-slate-400 text-sm font-medium">Checking...</span>
+                            <span class="flex items-center text-slate-400 text-sm font-medium"
+                                id="kpi-services-status">--</span>
                         </div>
                         <h3 class="text-slate-500 text-sm font-medium">Pending Services</h3>
-                        <p id="kpi-pending-services" class="text-2xl font-bold text-slate-900 mt-1">Loading...</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-1" id="kpi-services">Loading...</p>
                     </div>
                 </div>
 
-                <!-- LIVE SPATIAL FEED (Leaflet Map) -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-8">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                        <div>
-                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                <i data-lucide="map" class="w-5 h-5 text-indigo-500"></i> Live Spatial Feed
-                            </h2>
-                            <p class="text-sm text-slate-500">Monitoring municipal zones and geofenced perimeters in
-                                real-time.</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <span
-                                    class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
-                                SCAT Geofence Active
-                            </span>
-                            <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                                <span
-                                    class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
-                                Parking Sensors Online
-                            </span>
-                        </div>
-                    </div>
-
-                    <div id="civicMap"
-                        class="w-full h-[450px] rounded-xl border border-slate-200 z-0 relative overflow-hidden"></div>
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mt-8">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
                     <div class="xl:col-span-2 space-y-8">
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 z-0">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <h2 class="text-lg font-bold text-slate-900">Live Spatial Feed</h2>
+                                    <p class="text-sm text-slate-500">Monitoring municipal zones and geofenced
+                                        perimeters in real-time.</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> SCAT
+                                        Active
+                                    </span>
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></span> Sensors
+                                        Online
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="civicMap" class="w-full h-[350px] rounded-xl border border-slate-200 z-0"></div>
+                        </div>
 
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                             <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center">
                                 <div>
                                     <h2 class="text-lg font-bold text-slate-900">Your Civic & PPP Initiatives</h2>
-                                    <p class="text-sm text-slate-500">Track proposals moving through the legislative and
+                                    <p class="text-sm text-slate-500">Track proposals moving through legislative and
                                         public works filters.</p>
                                 </div>
-                                <button
-                                    class="text-civic-600 hover:bg-civic-50 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">View
-                                    All</button>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                        <tr
+                                            class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
                                             <th class="px-6 py-3 font-medium">Project / Proposal Name</th>
                                             <th class="px-6 py-3 font-medium">Pillar</th>
                                             <th class="px-6 py-3 font-medium">Current Stage</th>
                                             <th class="px-6 py-3 font-medium">Tech Backbone</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-slate-200 text-sm">
-                                        <tr class="hover:bg-slate-50 transition-colors">
-                                            <td class="px-6 py-4">
-                                                <div class="font-medium text-slate-900">Smart Parking Capacity
-                                                    Enforcement</div>
-                                                <div class="text-slate-500 text-xs mt-0.5">Municipal Corporation
-                                                    Initiative</div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <span
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
-                                                    <i data-lucide="handshake" class="w-3 h-3"></i> Public/Private
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center gap-2">
-                                                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                                                    <span class="text-slate-700 font-medium">Committee Review</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 text-slate-500">Node.js, Leaflet API</td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50 transition-colors">
-                                            <td class="px-6 py-4">
-                                                <div class="font-medium text-slate-900">Smart Campus Attendance Tracker
-                                                    (SCAT)</div>
-                                                <div class="text-slate-500 text-xs mt-0.5">Geofenced Auth System</div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <span
-                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
-                                                    <i data-lucide="building-2" class="w-3 h-3"></i> Services
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center gap-2">
-                                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                                    <span class="text-slate-700 font-medium">Active Development</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 text-slate-500">React, Socket.io, JWT</td>
+                                    <tbody id="initiatives-tbody" class="divide-y divide-slate-100 text-sm">
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-8 text-center text-slate-400">Loading system
+                                                data...</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h2 class="text-lg font-bold text-slate-900 mb-4">Democracy Engagement Trends</h2>
-                            <div class="relative h-64 w-full">
-                                <canvas id="engagementChart"></canvas>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="space-y-8">
 
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Services</h2>
-                            <div class="grid grid-cols-2 gap-4">
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600">
-                                    <i data-lucide="receipt"
-                                        class="w-6 h-6 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold text-center">Pay Taxes</span>
-                                </button>
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600">
-                                    <i data-lucide="id-card"
-                                        class="w-6 h-6 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold text-center">Renew ID</span>
-                                </button>
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600">
-                                    <i data-lucide="map-pin"
-                                        class="w-6 h-6 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold text-center">Report Issue</span>
-                                </button>
-                                <button
-                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600">
-                                    <i data-lucide="folder-lock"
-                                        class="w-6 h-6 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
-                                    <span class="text-xs font-semibold text-center">Data Privacy</span>
-                                </button>
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-lg font-bold text-slate-900">Democracy Engagement</h2>
+                                <span class="text-xs text-slate-400" id="chart-last-updated">Updating...</span>
+                            </div>
+                            <div class="relative h-[250px] w-full">
+                                <canvas id="engagementChart"></canvas>
                             </div>
                         </div>
 
-                        <div
-                            class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 shadow-lg border border-slate-700 text-white relative overflow-hidden">
-                            <i data-lucide="shield-alert"
-                                class="absolute -right-4 -bottom-4 w-32 h-32 text-slate-700/50 rotate-12"></i>
-                            <div class="relative z-10">
-                                <div class="flex items-center gap-2 mb-3 text-blue-400">
-                                    <i data-lucide="fingerprint" class="w-5 h-5"></i>
-                                    <span class="text-sm font-bold uppercase tracking-wider">Digital Rights
-                                        Update</span>
-                                </div>
-                                <h3 class="text-lg font-semibold mb-2">New Data Protection Law Active</h3>
-                                <p class="text-slate-300 text-sm mb-4 leading-relaxed">As of this month, citizens have
-                                    expanded rights to audit how municipal APIs handle geolocation and credential data.
-                                </p>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h2 class="text-lg font-bold text-slate-900 mb-4">Quick Actions</h2>
+                            <div class="grid grid-cols-2 gap-3">
                                 <button
-                                    class="w-full bg-blue-500 hover:bg-blue-400 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
-                                    Review Your Data Consent
+                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
+                                    <i data-lucide="receipt"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
+                                    <span class="text-xs font-semibold">Pay Taxes</span>
+                                </button>
+                                <button
+                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
+                                    <i data-lucide="id-card"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
+                                    <span class="text-xs font-semibold">Renew ID</span>
+                                </button>
+                                <button
+                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
+                                    <i data-lucide="map-pin"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
+                                    <span class="text-xs font-semibold">Report Issue</span>
+                                </button>
+                                <button
+                                    class="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-100 hover:text-indigo-700 transition-all group text-slate-600 shadow-sm">
+                                    <i data-lucide="folder-lock"
+                                        class="w-5 h-5 mb-2 text-slate-400 group-hover:text-indigo-500"></i>
+                                    <span class="text-xs font-semibold">Data Privacy</span>
                                 </button>
                             </div>
                         </div>
 
                     </div>
                 </div>
-
             </div>
+
+            <div id="view-placeholder" class="hidden max-w-7xl mx-auto flex items-center justify-center h-full fade-in">
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                        <i data-lucide="construction" class="w-10 h-10"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2" id="placeholder-title">Module Loading</h2>
+                    <p class="text-slate-500">This module is currently receiving real-time data configurations.</p>
+                </div>
+            </div>
+
         </div>
     </main>
 
     <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Icons
+            lucide.createIcons();
 
-        // 1. Function to fetch data from the protected Express endpoint
-        async function fetchDashboardData() {
-            // Provide a dummy dev token so the middleware passes
-            const dummyHeader = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-            const dummyPayload = btoa(JSON.stringify({ id: "123", role: "citizen" }));
-            const dummySignature = "dummy-signature-for-dev";
-            const token = localStorage.getItem('civic_jwt_token') || `${dummyHeader}.${dummyPayload}.${dummySignature}`;
+            /* =========================================
+               1. NAVIGATION & STATE MANAGEMENT
+               ========================================= */
+            const viewHistory = ['dashboard'];
+            let currentHistoryIndex = 0;
+            const views = {
+                'dashboard': 'Civic Dashboard',
+                'rights': 'Digital Rights Center',
+                'democracy': 'Democracy Hub',
+                'petitions': 'Legislative Petitions',
+                'services': 'Citizen Services',
+                'collab': 'Public/Private Collaborations'
+            };
 
-            try {
-                // Make the GET request to your Node.js backend
-                const response = await fetch('http://localhost:5000/api/v1/dashboard/stats', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // Injecting the JWT
+            const viewDashboard = document.getElementById('view-dashboard');
+            const viewPlaceholder = document.getElementById('view-placeholder');
+            const placeholderTitle = document.getElementById('placeholder-title');
+            const btnBack = document.getElementById('nav-back');
+            const btnForward = document.getElementById('nav-forward');
+            const navButtons = document.querySelectorAll('.nav-btn');
+
+            function navigateTo(viewId, pushHistory = true) {
+                // Update Sidebar UI
+                navButtons.forEach(btn => {
+                    if (btn.dataset.view === viewId) {
+                        btn.classList.remove('hover:bg-slate-800', 'hover:text-white', 'text-slate-300');
+                        btn.classList.add('bg-civic-600/20', 'text-civic-400');
+                    } else {
+                        btn.classList.add('hover:bg-slate-800', 'hover:text-white', 'text-slate-300');
+                        btn.classList.remove('bg-civic-600/20', 'text-civic-400');
                     }
                 });
 
-                const result = await response.json();
-
-                if (result.success) {
-                    updateDashboardUI(result.data);
+                // Toggle Content
+                if (viewId === 'dashboard') {
+                    viewDashboard.classList.remove('hidden');
+                    viewPlaceholder.classList.add('hidden');
                 } else {
-                    console.error('Failed to load dashboard:', result.message);
+                    viewDashboard.classList.add('hidden');
+                    viewPlaceholder.classList.remove('hidden');
+                    placeholderTitle.innerText = views[viewId];
                 }
 
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
+                // Manage History Array
+                if (pushHistory) {
+                    // Truncate future history if we navigated back then clicked a new link
+                    viewHistory.splice(currentHistoryIndex + 1);
+                    viewHistory.push(viewId);
+                    currentHistoryIndex++;
+                }
+
+                updateNavButtons();
             }
-        }
 
-        // 2. Function to inject the API data into the HTML
-        function updateDashboardUI(data) {
-            const literacyScoreEl = document.getElementById('kpi-literacy-score');
-            if (literacyScoreEl) literacyScoreEl.textContent = data.digitalLiteracy.status;
+            function updateNavButtons() {
+                btnBack.disabled = currentHistoryIndex === 0;
+                btnForward.disabled = currentHistoryIndex === viewHistory.length - 1;
 
-            const townhallsEl = document.getElementById('kpi-townhalls');
-            if (townhallsEl) townhallsEl.textContent = `${data.democracyHub.upcomingTownhalls} Scheduled`;
+                btnBack.classList.toggle('cursor-pointer', !btnBack.disabled);
+                btnForward.classList.toggle('cursor-pointer', !btnForward.disabled);
+            }
 
-            const petitionsEl = document.getElementById('kpi-petitions');
-            if (petitionsEl) petitionsEl.textContent = `${data.petitions.supported} Active`;
-
-            const pendingServicesEl = document.getElementById('kpi-pending-services');
-            if (pendingServicesEl) pendingServicesEl.textContent = `${data.services.pendingRequests} Requests`;
-
-            const servicesStatusEl = document.getElementById('kpi-services-status');
-            if (servicesStatusEl) servicesStatusEl.textContent = data.services.statusText;
-        }
-
-        // 3. Initialize the fetch when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchDashboardData();
-        });
-
-        // Initialize Chart.js for Democracy Engagement
-        const ctx = document.getElementById('engagementChart').getContext('2d');
-        const engagementChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Townhall Attendance',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#10b981', // Emerald 500
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                },
-                {
-                    label: 'Petitions Signed',
-                    data: [5, 8, 12, 10, 15, 18],
-                    borderColor: '#f59e0b', // Amber 500
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    fill: false,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: { usePointStyle: true, boxWidth: 8, font: { family: 'Inter' } }
+            // Click Listeners for Sidebar
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.view !== viewHistory[currentHistoryIndex]) {
+                        navigateTo(btn.dataset.view);
                     }
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
-                    x: { grid: { display: false }, border: { display: false } }
-                },
-                interaction: { mode: 'index', intersect: false }
-            }
-        });
-    </script>
-
-    <!-- Real-Time Socket.io Integration -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        // 1. Connect to the Socket.io server
-        const socket = io('http://localhost:5000');
-
-        socket.on('connect', () => {
-            console.log('Connected to real-time civic feed:', socket.id);
-        });
-
-        // Initialize Leaflet Map (Centered on New Delhi)
-        const map = L.map('civicMap').setView([28.6139, 77.2090], 13);
-
-        // Add a sleek, light-themed tile layer suitable for a dashboard
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
-
-        // --- SMART PARKING ENFORCEMENT ZONES ---
-        // Define a parking zone (e.g., Connaught Place area)
-        const parkingZoneA = L.polygon([
-            [28.634, 77.215],
-            [28.630, 77.222],
-            [28.625, 77.218],
-            [28.628, 77.212]
-        ], {
-            color: '#3b82f6', // Blue for normal capacity
-            fillColor: '#3b82f6',
-            fillOpacity: 0.2,
-            weight: 2
-        }).addTo(map);
-
-        parkingZoneA.bindPopup(`
-            <div class="font-sans">
-                <strong class="text-slate-900">Zone: Delhi-Zone-North</strong><br/>
-                <span class="text-sm text-slate-600">Status: <span id="popup-status" class="text-blue-600 font-bold">Good</span></span><br/>
-                <span class="text-xs text-slate-500">Sensors Active</span>
-            </div>
-        `);
-
-        // --- SMART CAMPUS ATTENDANCE TRACKER (SCAT) ---
-        // Define a Wi-Fi Geofence for a campus
-        const campusGeofence = L.circle([28.609, 77.035], {
-            color: '#10b981', // Emerald green
-            fillColor: '#10b981',
-            fillOpacity: 0.15,
-            radius: 400 // 400 meter radius for the campus Wi-Fi net
-        }).addTo(map);
-
-        campusGeofence.bindPopup(`
-            <div class="font-sans">
-                <strong class="text-slate-900">NSUT Campus Perimeter</strong><br/>
-                <span class="text-sm text-emerald-600 font-bold">Wi-Fi Geofence Active</span>
-            </div>
-        `);
-
-        // Create a LayerGroup to hold dynamic student check-in markers
-        const attendanceMarkers = L.layerGroup().addTo(map);
-
-        // Adjust map bounds to show both the parking zone and the campus
-        map.fitBounds([parkingZoneA.getBounds(), campusGeofence.getBounds()]);
-
-        // 2. Listen for the specific 'capacityAlert' event (Parking Full)
-        socket.on('capacityAlert', (data) => {
-            console.warn('Real-time parking alert received:', data);
-            showLiveAlert(data.message, data.severity);
-
-            // Change the Leaflet polygon to red when capacity is breached
-            if (data.severity === 'high') {
-                parkingZoneA.setStyle({
-                    color: '#ef4444', // Red
-                    fillColor: '#ef4444',
-                    fillOpacity: 0.4
                 });
-                parkingZoneA.setPopupContent(`
-                    <div class="font-sans p-1">
-                        <strong class="text-slate-900">Zone: ${data.zone}</strong><br/>
-                        <span class="text-sm text-rose-600 font-bold">Status: FULL</span><br/>
-                        <span class="text-xs text-rose-500 font-medium animate-pulse">Enforcement Dispatched</span><br/>
-                        <span class="text-[10px] text-slate-400 mt-1 block">Triggered: ${new Date().toLocaleTimeString()}</span>
-                    </div>
-                `);
-                parkingZoneA.openPopup();
-            } else {
-                // Reset back to normal
-                parkingZoneA.setStyle({
-                    color: '#3b82f6',
-                    fillColor: '#3b82f6',
-                    fillOpacity: 0.2
-                });
-                parkingZoneA.setPopupContent(`
-                    <div class="font-sans p-1">
-                        <strong class="text-slate-900">Zone: ${data.zone}</strong><br/>
-                        <span class="text-sm text-slate-600">Status: <span class="text-blue-600 font-bold">Good</span></span><br/>
-                    </div>
-                `);
-                parkingZoneA.closePopup();
-            }
-        });
-
-        // Listen for SCAT event (Attendance/Geofence Logged)
-        socket.on('attendanceLogged', (data) => {
-            console.log('Live geofence entry:', data);
-            showLiveAlert(data.message, 'low');
-
-            // Map interaction: Drop a marker
-            // Example dynamic location generation slightly offset from the campus center
-            const dynamicLat = 28.609 + (Math.random() - 0.5) * 0.005;
-            const dynamicLng = 77.035 + (Math.random() - 0.5) * 0.005;
-
-            // Create a custom pulsing icon for the student check-in
-            const studentIcon = L.divIcon({
-                className: 'bg-emerald-500 w-3 h-3 rounded-full border-2 border-white shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-ping relative',
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
-            });
-            const staticIcon = L.divIcon({
-                className: 'bg-emerald-500 w-3 h-3 rounded-full border-2 border-white shadow-sm relative',
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
             });
 
-            // Add the glowing marker
-            const marker = L.marker([dynamicLat, dynamicLng], { icon: studentIcon }).addTo(attendanceMarkers);
-            // Add static core to the pulse
-            const coreMarker = L.marker([dynamicLat, dynamicLng], { icon: staticIcon }).addTo(attendanceMarkers);
+            // Click Listeners for Back/Next
+            btnBack.addEventListener('click', () => {
+                if (currentHistoryIndex > 0) {
+                    currentHistoryIndex--;
+                    navigateTo(viewHistory[currentHistoryIndex], false);
+                }
+            });
 
-            marker.bindPopup(`
-                <div class="font-sans p-1">
-                    <strong class="text-slate-900">ID: ${data.id}</strong><br/>
-                    <span class="text-xs text-slate-500">Auth: Multi-Factor Geofence</span><br/>
-                    <span class="text-[10px] text-slate-400 block mt-1">${data.time}</span>
-                </div>
-            `).openPopup();
+            btnForward.addEventListener('click', () => {
+                if (currentHistoryIndex < viewHistory.length - 1) {
+                    currentHistoryIndex++;
+                    navigateTo(viewHistory[currentHistoryIndex], false);
+                }
+            });
 
-            // Auto-remove marker after 8 seconds to prevent clutter
-            setTimeout(() => {
-                attendanceMarkers.removeLayer(marker);
-                attendanceMarkers.removeLayer(coreMarker);
-            }, 8000);
+            // Exit / Logout Routing
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                // Clear any stored secure tokens here
+                localStorage.removeItem('civic_jwt_token');
+                // Redirect to landing page (assuming index.html is the landing page file)
+                window.location.href = 'index.html';
+            });
+
+
+            /* =========================================
+               2. DATA INJECTION (Replacing Dummy Data)
+               ========================================= */
+            // Simulating an initial API fetch
+            const initData = {
+                kpis: {
+                    literacy: "Advanced",
+                    literacyTrend: "<i data-lucide='trending-up' class='w-4 h-4 mr-1'></i> 98%",
+                    townhalls: "3 Scheduled",
+                    townhallNext: "Next: 14 Days",
+                    petitions: "12 Active",
+                    services: "0 Requests",
+                    servicesStatus: "All clear"
+                },
+                initiatives: [
+                    {
+                        name: "Smart Parking Capacity Enforcement",
+                        desc: "Municipal Corporation of Delhi",
+                        pillar: "Public/Private",
+                        pillarColor: "rose",
+                        stage: "Committee Review",
+                        stageColor: "amber",
+                        tech: "Node.js, Leaflet API"
+                    },
+                    {
+                        name: "Smart Campus Attendance Tracker (SCAT)",
+                        desc: "Geofenced Wi-Fi & Face Auth System",
+                        pillar: "Services",
+                        pillarColor: "indigo",
+                        stage: "Active Development",
+                        stageColor: "emerald",
+                        tech: "React, Socket.io, JWT"
+                    }
+                ]
+            };
+
+            // Render KPIs
+            document.getElementById('kpi-literacy').innerText = initData.kpis.literacy;
+            document.getElementById('kpi-literacy-trend').innerHTML = initData.kpis.literacyTrend;
+            document.getElementById('kpi-townhall').innerText = initData.kpis.townhalls;
+            document.getElementById('kpi-townhall-next').innerText = initData.kpis.townhallNext;
+            document.getElementById('kpi-petitions').innerText = initData.kpis.petitions;
+            document.getElementById('kpi-services').innerText = initData.kpis.services;
+            document.getElementById('kpi-services-status').innerText = initData.kpis.servicesStatus;
+
+            // Render Table dynamically
+            const tbody = document.getElementById('initiatives-tbody');
+            tbody.innerHTML = ''; // clear loading state
+            initData.initiatives.forEach(proj => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-slate-900">${proj.name}</div>
+                            <div class="text-slate-500 text-xs mt-0.5">${proj.desc}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-${proj.pillarColor}-50 text-${proj.pillarColor}-700">
+                                ${proj.pillar}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-${proj.stageColor}-500 ${proj.stageColor === 'amber' ? 'animate-pulse' : ''}"></div>
+                                <span class="text-slate-700 font-medium">${proj.stage}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-slate-500 text-xs font-mono">${proj.tech}</td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons(); // Re-render icons injected via HTML strings
+
+
+            /* =========================================
+               3. REAL-TIME ENGINE (WebSocket Simulation)
+               ========================================= */
+
+            // --- Notification System ---
+            const notifBtn = document.getElementById('notification-toggle');
+            const notifPanel = document.getElementById('notification-panel');
+            const notifBadge = document.getElementById('notif-badge');
+            const notifList = document.getElementById('notification-list');
+            const emptyNotifs = document.getElementById('empty-notifs');
+            let unreadCount = 0;
+
+            notifBtn.addEventListener('click', () => {
+                notifPanel.classList.toggle('hidden');
+                // Clear badge on open
+                if (!notifPanel.classList.contains('hidden')) {
+                    unreadCount = 0;
+                    notifBadge.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('clear-notifs').addEventListener('click', () => {
+                notifList.innerHTML = '<div class="p-8 text-center text-slate-400 text-sm italic" id="empty-notifs">Systems online. Awaiting data...</div>';
+                unreadCount = 0;
+                notifBadge.classList.add('hidden');
+            });
+
+            function pushNotification(title, message, type = 'info') {
+                if (document.getElementById('empty-notifs')) {
+                    document.getElementById('empty-notifs').remove();
+                }
+
+                const colors = {
+                    info: 'blue',
+                    warning: 'amber',
+                    critical: 'rose',
+                    success: 'emerald'
+                };
+                const color = colors[type];
+
+                const html = `
+                    <div class="px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors fade-in">
+                        <div class="flex items-start gap-3">
+                            <div class="mt-1 w-2 h-2 rounded-full bg-${color}-500 shadow-[0_0_8px_rgba(0,0,0,0.2)]"></div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">${title}</p>
+                                <p class="text-xs text-slate-500 mt-0.5">${message}</p>
+                                <p class="text-[10px] text-slate-400 mt-1 font-mono">${new Date().toLocaleTimeString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                notifList.insertAdjacentHTML('afterbegin', html);
+
+                // Update Badge if panel is closed
+                if (notifPanel.classList.contains('hidden')) {
+                    unreadCount++;
+                    notifBadge.classList.remove('hidden');
+                }
+            }
+
+
+            // --- Interactive Map (Leaflet) ---
+            const map = L.map('civicMap', { zoomControl: false }).setView([28.6139, 77.2090], 13); // Centered on Delhi
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Delhi Smart Parking Zone Polygon
+            const parkingZone = L.polygon([
+                [28.634, 77.215], [28.630, 77.222], [28.625, 77.218], [28.628, 77.212]
+            ], { color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.2, weight: 2 }).addTo(map);
+            parkingZone.bindPopup('<strong>MCD Parking Zone Alpha</strong><br>Status: <span class="text-blue-600">Available</span>');
+
+            // SCAT Geofence Circle (e.g., University Campus)
+            const campusGeofence = L.circle([28.609, 77.035], {
+                color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, radius: 500
+            }).addTo(map);
+            campusGeofence.bindPopup('<strong>SCAT Geofence</strong><br>Wi-Fi perimeter active.');
+
+            map.fitBounds([parkingZone.getBounds(), campusGeofence.getBounds()]);
+            const liveMarkers = L.layerGroup().addTo(map);
+
+
+            // --- Live Chart (Chart.js) ---
+            const ctx = document.getElementById('engagementChart').getContext('2d');
+            let chartData = [12, 19, 15, 25, 22, 30];
+            let labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Live'];
+
+            const engagementChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Civic Interactions / hr',
+                        data: chartData,
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0ea5e9',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    },
+                    animation: { duration: 400 }
+                }
+            });
+
+
+            // --- Event Simulation Engine ---
+            // This replaces the backend WebSocket connection to make the HTML fully standalone and "live"
+            let clock = 0;
+
+            setInterval(() => {
+                clock++;
+
+                // Event 1: SCAT Check-in (Every 4 seconds)
+                if (clock % 4 === 0) {
+                    // Generate random point inside geofence
+                    const lat = 28.609 + (Math.random() - 0.5) * 0.006;
+                    const lng = 77.035 + (Math.random() - 0.5) * 0.006;
+
+                    const icon = L.divIcon({
+                        className: 'bg-emerald-500 w-3 h-3 rounded-full border-2 border-white shadow-lg animate-ping',
+                        iconSize: [12, 12]
+                    });
+
+                    const marker = L.marker([lat, lng], { icon }).addTo(liveMarkers);
+                    setTimeout(() => liveMarkers.removeLayer(marker), 3000); // fade out
+
+                    // Small chance to trigger a notification
+                    if (Math.random() > 0.8) {
+                        pushNotification("SCAT Batch Processed", "Geofenced attendance verified for 45 identities.", "success");
+                    }
+                }
+
+                // Event 2: Parking Capacity Breach (Every 15 seconds)
+                if (clock % 15 === 0) {
+                    const isFull = Math.random() > 0.5;
+                    if (isFull) {
+                        parkingZone.setStyle({ color: '#ef4444', fillColor: '#ef4444' });
+                        parkingZone.setPopupContent('<strong>MCD Parking Zone Alpha</strong><br>Status: <span class="text-rose-600 font-bold">FULL - Enforcement Alerted</span>');
+                        pushNotification("Parking Capacity Breach", "Zone Alpha has exceeded 95% capacity.", "critical");
+                    } else {
+                        parkingZone.setStyle({ color: '#3b82f6', fillColor: '#3b82f6' });
+                        parkingZone.setPopupContent('<strong>MCD Parking Zone Alpha</strong><br>Status: <span class="text-blue-600">Available</span>');
+                    }
+                }
+
+                // Event 3: Chart Data Update (Every 6 seconds)
+                if (clock % 6 === 0) {
+                    const newValue = chartData[chartData.length - 1] + (Math.floor(Math.random() * 10) - 4);
+                    chartData.push(Math.max(10, newValue)); // keep above 10
+                    chartData.shift(); // remove oldest
+
+                    document.getElementById('chart-last-updated').innerText = `Live: ${new Date().toLocaleTimeString()}`;
+                    engagementChart.update();
+                }
+
+                // Event 4: Petition Milestone (Random, infrequent)
+                if (clock % 20 === 0 && Math.random() > 0.5) {
+                    pushNotification("Petition Milestone", "New digital rights petition reached 10,000 signatures.", "info");
+
+                    // Dynamically update the KPI text with a flash effect
+                    const petKpi = document.getElementById('kpi-petitions');
+                    petKpi.innerText = "13 Active";
+                    petKpi.classList.add('text-amber-500');
+                    setTimeout(() => petKpi.classList.remove('text-amber-500'), 1000);
+                }
+
+            }, 1000); // Tick every 1 second
+
         });
-
-        // Function to render the UI update dynamically
-        function showLiveAlert(message, severity) {
-            // Create a beautiful Tailwind alert box dynamically
-            const alertDiv = document.createElement('div');
-            const bgColor = severity === 'high' ? 'bg-rose-500' : 'bg-blue-500';
-            const iconType = severity === 'high' ? 'alert-triangle' : 'info';
-
-            alertDiv.className = `fixed bottom-4 right-4 ${bgColor} text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-500 translate-y-full opacity-0 flex items-center gap-3`;
-
-            alertDiv.innerHTML = `
-                <i data-lucide="${iconType}" class="w-6 h-6"></i>
-                <div>
-                    <p class="font-bold text-sm">Live System Update</p>
-                    <p class="text-xs opacity-90">${message}</p>
-                </div>
-            `;
-
-            document.body.appendChild(alertDiv);
-            lucide.createIcons({ root: alertDiv }); // Render the icon
-
-            // Animate in
-            setTimeout(() => {
-                alertDiv.classList.remove('translate-y-full', 'opacity-0');
-            }, 50);
-
-            // Animate out after 6 seconds
-            setTimeout(() => {
-                alertDiv.classList.add('translate-y-full', 'opacity-0');
-                setTimeout(() => alertDiv.remove(), 500);
-            }, 6000);
-        }
     </script>
 </body>
 
