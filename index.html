@@ -1,48 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Governance: Pillars of Civic Life</title>
-    <!-- Tailwind CSS -->
+    <title>CivicHub | Modern Governance</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        civic: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            900: '#0c4a6e',
-                        }
+                        civic: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 900: '#0c4a6e' }
                     },
                     animation: {
-                        'gradient-x': 'gradient-x 15s ease infinite',
                         'float': 'float 6s ease-in-out infinite',
                     },
                     keyframes: {
-                        'gradient-x': {
-                            '0%, 100%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'left center'
-                            },
-                            '50%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'right center'
-                            },
-                        },
                         'float': {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-20px)' },
@@ -53,27 +31,29 @@
         }
     </script>
     <style>
-        /* Custom scrollbar for a polished look */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #f1f5f9; 
+            background: #f1f5f9;
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
+            background: #cbd5e1;
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
+            background: #94a3b8;
         }
-        
-        /* Reveal Animation on Scroll */
+
         .reveal {
             opacity: 0;
             transform: translateY(40px);
             transition: all 1s cubic-bezier(0.5, 0, 0, 1);
         }
+
         .reveal.active {
             opacity: 1;
             transform: translateY(0);
@@ -86,411 +66,416 @@
         }
 
         @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
-        /* Glassmorphism utilities */
         .glass {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
-        
+
         .glass-dark {
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
+
 <body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-x-hidden">
 
-    <!-- Navigation (Floating Pill) -->
-    <div class="fixed w-full z-50 top-0 sm:top-4 transition-all duration-300 px-0 sm:px-6 lg:px-8 flex justify-center">
-        <nav class="w-full max-w-6xl glass sm:rounded-full shadow-lg border-b sm:border border-slate-200/50">
+    <div class="fixed w-full z-40 top-0 sm:top-4 transition-all duration-300 px-0 sm:px-6 lg:px-8 flex justify-center">
+        <nav class="w-full max-w-7xl glass sm:rounded-full shadow-lg border-b sm:border border-slate-200/50">
             <div class="px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16 items-center">
                     <div class="flex items-center gap-2 group cursor-pointer">
-                        <div class="bg-civic-600 text-white p-2 rounded-full group-hover:rotate-12 transition-transform shadow-md">
+                        <div
+                            class="bg-civic-600 text-white p-2 rounded-full group-hover:rotate-12 transition-transform shadow-md">
                             <i data-lucide="landmark" class="w-5 h-5"></i>
                         </div>
                         <span class="font-extrabold text-xl text-slate-900 tracking-tight">CivicHub</span>
                     </div>
-                    <!-- Desktop Menu -->
-                    <div class="hidden md:flex space-x-2 items-center">
-                        <a href="#digital-citizens" class="px-4 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-civic-700 hover:bg-civic-50 transition-all">Digital Citizens</a>
-                        <a href="#democracy" class="px-4 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-all">Democracy</a>
-                        <a href="#petition" class="px-4 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition-all">Petition to Law</a>
-                        <a href="#services" class="px-4 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all">Services</a>
-                        <a href="#collaboration" class="px-4 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50 transition-all">Collaboration</a>
+
+                    <div class="hidden lg:flex space-x-1 items-center">
+                        <a href="#digital-citizens"
+                            class="px-3 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-civic-700 hover:bg-civic-50 transition-all">Digital
+                            Citizens</a>
+                        <a href="#democracy"
+                            class="px-3 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-all">Democracy</a>
+                        <a href="#petition"
+                            class="px-3 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-amber-700 hover:bg-amber-50 transition-all">Petitions</a>
+                        <a href="#services"
+                            class="px-3 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all">Services</a>
+                        <a href="#collaboration"
+                            class="px-3 py-2 rounded-full text-sm font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50 transition-all">Collaboration</a>
+
+                        <div class="w-px h-6 bg-slate-300 mx-2"></div>
+
+                        <button
+                            class="open-auth-btn bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-civic-600 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <i data-lucide="user" class="w-4 h-4"></i> Access Portal
+                        </button>
                     </div>
-                    <!-- Mobile Menu Button -->
-                    <div class="md:hidden flex items-center">
-                        <button id="mobile-menu-btn" class="text-slate-600 hover:text-slate-900 focus:outline-none p-2 bg-slate-100/80 rounded-full">
+
+                    <div class="lg:hidden flex items-center gap-3">
+                        <button
+                            class="open-auth-btn bg-slate-900 text-white px-4 py-1.5 rounded-full text-sm font-bold hover:bg-civic-600 transition-colors">
+                            Login
+                        </button>
+                        <button id="mobile-menu-btn"
+                            class="text-slate-600 hover:text-slate-900 focus:outline-none p-2 bg-slate-100/80 rounded-full">
                             <i data-lucide="menu" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            <!-- Mobile Menu Panel -->
-            <div id="mobile-menu" class="hidden md:hidden glass border-t border-slate-100 sm:rounded-b-3xl absolute w-full left-0 top-16 shadow-2xl">
+
+            <div id="mobile-menu"
+                class="hidden lg:hidden glass border-t border-slate-100 sm:rounded-b-3xl absolute w-full left-0 top-16 shadow-2xl">
                 <div class="px-4 pt-2 pb-4 space-y-2 sm:px-3">
-                    <a href="#digital-citizens" class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:text-civic-600 hover:bg-civic-50 transition-colors">Digital Citizens</a>
-                    <a href="#democracy" class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">Democracy</a>
-                    <a href="#petition" class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:text-amber-600 hover:bg-amber-50 transition-colors">Petition to Law</a>
-                    <a href="#services" class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">Services</a>
-                    <a href="#collaboration" class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:text-rose-600 hover:bg-rose-50 transition-colors">Collaboration</a>
+                    <a href="#digital-citizens"
+                        class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:bg-civic-50 transition-colors">Digital
+                        Citizens</a>
+                    <a href="#democracy"
+                        class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:bg-emerald-50 transition-colors">Democracy</a>
+                    <a href="#services"
+                        class="block px-4 py-3 rounded-xl text-base font-bold text-slate-700 hover:bg-indigo-50 transition-colors">Services</a>
                 </div>
             </div>
         </nav>
     </div>
 
-    <!-- Hero Section -->
     <header class="hero-pattern pt-40 pb-32 lg:pt-56 lg:pb-48 relative overflow-hidden">
-        <!-- Abstract glowing shapes -->
-        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-float"></div>
-        <div class="absolute bottom-20 right-10 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-float" style="animation-delay: 2s;"></div>
-        
+        <div
+            class="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-float">
+        </div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-float"
+            style="animation-delay: 2s;"></div>
+
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-dark text-white text-sm font-semibold mb-8 shadow-2xl border-white/20 transform hover:scale-105 transition-transform cursor-default">
+            <div
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-dark text-white text-sm font-semibold mb-8 shadow-2xl border-white/20 cursor-default">
                 <span class="relative flex h-3 w-3">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
                 </span>
                 The Future of Society
             </div>
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight mb-8 leading-tight">
                 Modern Governance <br class="hidden md:block" />
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-200 to-indigo-300 drop-shadow-lg">Pillars of Civic Life</span>
+                <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-200 to-indigo-300 drop-shadow-lg">Pillars
+                    of Civic Life</span>
             </h1>
             <p class="mt-4 max-w-2xl mx-auto text-xl md:text-2xl text-blue-100 font-light leading-relaxed">
-                Governance is no longer a static institution managed solely from the halls of capitals; it is a <strong class="text-white font-semibold">dynamic, interconnected ecosystem</strong>.
+                Governance is no longer a static institution managed solely from the halls of capitals; it is a <strong
+                    class="text-white font-semibold">dynamic, interconnected ecosystem</strong>.
             </p>
             <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4 sm:gap-6">
-                <a href="#digital-citizens" class="bg-white text-slate-900 px-8 py-4 rounded-full font-bold shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group">
+                <button
+                    class="open-auth-btn bg-white text-slate-900 px-8 py-4 rounded-full font-bold shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group">
+                    <i data-lucide="fingerprint" class="w-5 h-5 group-hover:text-civic-600 transition-colors"></i>
+                    Enter Civic Dashboard
+                </button>
+                <a href="#digital-citizens"
+                    class="bg-slate-800/50 backdrop-blur-md border border-slate-700 text-white px-8 py-4 rounded-full font-bold hover:bg-slate-800 transition-all duration-300 flex items-center justify-center gap-2 group">
                     Explore the Pillars
                     <i data-lucide="arrow-down" class="w-5 h-5 group-hover:translate-y-1 transition-transform"></i>
                 </a>
             </div>
         </div>
-        
-        <!-- Bottom Wave Transition -->
+
         <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
-            <svg class="relative block w-[calc(100%+1.3px)] h-[50px] md:h-[100px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118,152.46,130,224.28,108.28A600.21,600.21,0,0,0,321.39,56.44Z" fill="#f8fafc"></path>
+            <svg class="relative block w-[calc(100%+1.3px)] h-[50px] md:h-[100px]" data-name="Layer 1"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path
+                    d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118,152.46,130,224.28,108.28A600.21,600.21,0,0,0,321.39,56.44Z"
+                    fill="#f8fafc"></path>
             </svg>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-32">
-
-        <!-- Pillar 1: Digital Citizens & Rights -->
         <section id="digital-citizens" class="scroll-mt-32 reveal">
             <div class="flex flex-col lg:flex-row gap-12 items-center">
                 <div class="lg:w-1/3">
-                    <div class="w-16 h-16 bg-gradient-to-br from-civic-100 to-civic-200 text-civic-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-civic-200 transform -rotate-3 hover:rotate-0 transition-transform">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-civic-100 to-civic-200 text-civic-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg transform -rotate-3">
                         <i data-lucide="laptop" class="w-8 h-8"></i>
                     </div>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">1. Digital Citizens & Rights</h2>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">1. Digital Citizens & Rights
+                    </h2>
                     <p class="text-slate-600 leading-relaxed text-lg">
-                        The concept of citizenship has expanded beyond physical borders into the digital realm. A "digital citizen" is anyone who uses information technology to engage in society, politics, and government.
+                        The concept of citizenship has expanded beyond physical borders. A "digital citizen" engages in
+                        society and government via technology securely.
                     </p>
                 </div>
                 <div class="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="p-3 rounded-full bg-civic-50 group-hover:bg-civic-100 transition-colors">
-                                <i data-lucide="wifi" class="w-6 h-6 text-civic-500"></i>
-                            </div>
-                            <h3 class="font-bold text-xl text-slate-800">The Right to Access</h3>
-                        </div>
-                        <p class="text-slate-600 text-base leading-relaxed">Internet connectivity is increasingly recognized not just as a utility, but as a fundamental human right necessary for participating in modern economic and civic life. Bridging the "digital divide" is a primary governance challenge.</p>
+                    <div
+                        class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <div class="p-3 rounded-full bg-civic-50 w-fit mb-4"><i data-lucide="wifi"
+                                class="w-6 h-6 text-civic-500"></i></div>
+                        <h3 class="font-bold text-xl mb-2 text-slate-800">The Right to Access</h3>
+                        <p class="text-slate-600">Internet connectivity is recognized as a fundamental human right
+                            necessary for participating in modern economic life.</p>
                     </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="p-3 rounded-full bg-civic-50 group-hover:bg-civic-100 transition-colors">
-                                <i data-lucide="shield-check" class="w-6 h-6 text-civic-500"></i>
-                            </div>
-                            <h3 class="font-bold text-xl text-slate-800">Data Privacy</h3>
-                        </div>
-                        <p class="text-slate-600 text-base leading-relaxed">As citizens leave vast digital footprints, governance must establish frameworks (like GDPR) to protect individuals from unwarranted surveillance and data exploitation by state and corporate actors.</p>
-                    </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group md:col-span-2 bg-gradient-to-r from-white to-civic-50/50">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="p-3 rounded-full bg-civic-100 group-hover:bg-civic-200 transition-colors">
-                                <i data-lucide="book-open-check" class="w-6 h-6 text-civic-600"></i>
-                            </div>
-                            <h3 class="font-bold text-xl text-slate-800">Digital Literacy & Security</h3>
-                        </div>
-                        <p class="text-slate-600 text-base leading-relaxed">True digital citizenship requires the ability to critically evaluate online information, recognize misinformation, and protect oneself from cyber threats. Governments play a crucial role in fostering these skills through education.</p>
+                    <div
+                        class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all">
+                        <div class="p-3 rounded-full bg-civic-50 w-fit mb-4"><i data-lucide="shield-check"
+                                class="w-6 h-6 text-civic-500"></i></div>
+                        <h3 class="font-bold text-xl mb-2 text-slate-800">Data Privacy</h3>
+                        <p class="text-slate-600">Governance must establish frameworks to protect individuals from
+                            unwarranted surveillance and data exploitation.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Gradient Divider -->
-        <div class="flex justify-center reveal"><div class="w-32 h-1 bg-gradient-to-r from-transparent via-slate-300 to-transparent rounded-full opacity-50"></div></div>
-
-        <!-- Pillar 2: The Dance of Democracy -->
-        <section id="democracy" class="scroll-mt-32 reveal">
-            <div class="flex flex-col lg:flex-row-reverse gap-12 items-center">
-                <div class="lg:w-1/3">
-                    <div class="w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-emerald-200 transform rotate-3 hover:rotate-0 transition-transform">
-                        <i data-lucide="users" class="w-8 h-8"></i>
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">2. The Dance of Democracy</h2>
-                    <p class="text-slate-600 leading-relaxed text-lg">
-                        Democracy is rarely a straight line; it is a complex, continuous "dance" between the governed and the governing. It relies on a rhythm of push and pull, checks and balances, and constant renegotiation.
-                    </p>
-                </div>
-                <div class="lg:w-2/3 grid grid-cols-1 gap-6">
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-emerald-300 hover:shadow-xl hover:-translate-x-2 transition-all flex flex-col sm:flex-row gap-6 group">
-                        <div class="bg-emerald-50 p-4 rounded-xl h-fit group-hover:bg-emerald-100 transition-colors shadow-inner">
-                            <i data-lucide="vote" class="w-8 h-8 text-emerald-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-xl text-slate-800 mb-2">Beyond the Ballot Box</h3>
-                            <p class="text-slate-600 text-base leading-relaxed">While voting is the foundational step, the dance of democracy includes continuous civic engagement: town halls, peaceful protests, public forums, and community organizing.</p>
-                        </div>
-                    </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-emerald-300 hover:shadow-xl hover:-translate-x-2 transition-all flex flex-col sm:flex-row gap-6 group">
-                        <div class="bg-emerald-50 p-4 rounded-xl h-fit group-hover:bg-emerald-100 transition-colors shadow-inner">
-                            <i data-lucide="messages-square" class="w-8 h-8 text-emerald-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-xl text-slate-800 mb-2">Pluralism and Consensus</h3>
-                            <p class="text-slate-600 text-base leading-relaxed">A healthy democracy accommodates diverse voices and conflicting interests. The "dance" involves the messy, vital work of debate, compromise, and consensus-building among different factions of society.</p>
-                        </div>
-                    </div>
-                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:border-emerald-300 hover:shadow-xl hover:-translate-x-2 transition-all flex flex-col sm:flex-row gap-6 group">
-                        <div class="bg-emerald-50 p-4 rounded-xl h-fit group-hover:bg-emerald-100 transition-colors shadow-inner">
-                            <i data-lucide="scale" class="w-8 h-8 text-emerald-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-xl text-slate-800 mb-2">Accountability Mechanisms</h3>
-                            <p class="text-slate-600 text-base leading-relaxed">A free press, independent judiciaries, and civil society organizations act as the choreographers, ensuring that those in power do not overstep their boundaries and remain responsive to the public will.</p>
-                        </div>
-                    </div>
-                </div>
+        <div class="flex justify-center reveal">
+            <div
+                class="w-32 h-1 bg-gradient-to-r from-transparent via-slate-300 to-transparent rounded-full opacity-50">
             </div>
-        </section>
+        </div>
 
-        <!-- Gradient Divider -->
-        <div class="flex justify-center reveal"><div class="w-32 h-1 bg-gradient-to-r from-transparent via-slate-300 to-transparent rounded-full opacity-50"></div></div>
-
-        <!-- Pillar 3: Petition to Law -->
-        <section id="petition" class="scroll-mt-32 reveal">
-            <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <div class="lg:w-1/3">
-                    <div class="w-16 h-16 bg-gradient-to-br from-amber-100 to-amber-200 text-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-amber-200 transform -rotate-3 hover:rotate-0 transition-transform">
-                        <i data-lucide="scroll-text" class="w-8 h-8"></i>
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">3. Petition to Law</h2>
-                    <p class="text-slate-600 leading-relaxed text-lg">
-                        How does a public grievance become the law of the land? The journey from a grassroots petition to codified legislation is a critical measure of a government's responsiveness.
-                    </p>
-                </div>
-                <div class="lg:w-2/3">
-                    <div class="relative border-l-4 border-amber-200 ml-4 md:ml-8 space-y-12 pb-4 pt-4">
-                        <!-- Step 1 -->
-                        <div class="relative pl-10 md:pl-14 group">
-                            <div class="absolute -left-[14px] top-1 w-6 h-6 rounded-full bg-white border-4 border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)] group-hover:scale-125 group-hover:bg-amber-100 transition-all"></div>
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 group-hover:shadow-xl group-hover:-translate-y-1 transition-all">
-                                <h3 class="font-bold text-xl text-slate-800 mb-2 flex items-center gap-3"><span class="text-amber-500 font-black">01.</span> Issue Articulation</h3>
-                                <p class="text-slate-600 text-base leading-relaxed">It begins with citizens identifying a problem and coalescing around a solution. This can take the form of formal petitions, lobbying efforts, or widespread public awareness campaigns.</p>
-                            </div>
-                        </div>
-                        <!-- Step 2 -->
-                        <div class="relative pl-10 md:pl-14 group">
-                            <div class="absolute -left-[14px] top-1 w-6 h-6 rounded-full bg-white border-4 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] group-hover:scale-125 group-hover:bg-amber-100 transition-all"></div>
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 group-hover:shadow-xl group-hover:-translate-y-1 transition-all">
-                                <h3 class="font-bold text-xl text-slate-800 mb-2 flex items-center gap-3"><span class="text-amber-500 font-black">02.</span> The Legislative Filter</h3>
-                                <p class="text-slate-600 text-base leading-relaxed">Elected representatives take these public demands and translate them into policy proposals. This phase involves rigorous drafting, committee hearings, and expert testimonies to assess feasibility.</p>
-                            </div>
-                        </div>
-                        <!-- Step 3 -->
-                        <div class="relative pl-10 md:pl-14 group">
-                            <div class="absolute -left-[14px] top-1 w-6 h-6 rounded-full bg-amber-500 border-4 border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.8)] group-hover:scale-125 transition-all animate-pulse"></div>
-                            <div class="bg-gradient-to-br from-amber-50 to-white p-6 rounded-2xl shadow-md border border-amber-200 group-hover:shadow-xl group-hover:-translate-y-1 transition-all">
-                                <h3 class="font-bold text-xl text-slate-800 mb-2 flex items-center gap-3"><span class="text-amber-600 font-black">03.</span> Debate and Enactment</h3>
-                                <p class="text-slate-700 text-base leading-relaxed">The proposed bill is debated openly in the legislature. It is amended, refined, and eventually voted upon. If successful, it is signed into law, transforming a citizen's petition into a binding societal rule.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Gradient Divider -->
-        <div class="flex justify-center reveal"><div class="w-32 h-1 bg-gradient-to-r from-transparent via-slate-300 to-transparent rounded-full opacity-50"></div></div>
-
-        <!-- Pillar 4: Citizen Services -->
         <section id="services" class="scroll-mt-32 reveal">
             <div class="flex flex-col lg:flex-row-reverse gap-12 items-center">
                 <div class="lg:w-1/3">
-                    <div class="w-16 h-16 bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-indigo-200 transform rotate-3 hover:rotate-0 transition-transform">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg transform rotate-3">
                         <i data-lucide="building-2" class="w-8 h-8"></i>
                     </div>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">4. Citizen Services</h2>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">2. Citizen Services</h2>
                     <p class="text-slate-600 leading-relaxed text-lg">
-                        The most tangible interaction a person has with their government is through the delivery of citizen services. The effectiveness of a government is often judged by the quality and efficiency of these services.
-                    </p>
-                </div>
-                <div class="lg:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-gradient-to-br from-indigo-800 to-indigo-950 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden group sm:col-span-2 lg:col-span-1 lg:row-span-2 flex flex-col justify-between transform hover:-translate-y-2 transition-transform duration-300">
-                        <div class="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
-                            <i data-lucide="mouse-pointer-click" class="w-64 h-64 text-white"></i>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-md mb-6 border border-white/30 shadow-inner">
-                                <i data-lucide="smartphone" class="w-7 h-7 text-white"></i>
-                            </div>
-                            <h3 class="font-bold text-2xl mb-4 text-indigo-50">E-Governance</h3>
-                            <p class="text-indigo-200 text-base leading-relaxed">The transition from paper-based bureaucracy to digital portals. Single-window online systems allow citizens to manage taxes, licenses, and benefits effortlessly.</p>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group">
-                        <div class="bg-indigo-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-100 transition-colors">
-                            <i data-lucide="user-round-focus" class="w-7 h-7 text-indigo-600"></i>
-                        </div>
-                        <h3 class="font-bold text-xl text-slate-800 mb-3">User-Centric Design</h3>
-                        <p class="text-slate-600 text-sm leading-relaxed">Applying customer service principles to the public sector. Services are designed around user needs, aiming to reduce friction.</p>
-                    </div>
-                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group">
-                        <div class="bg-indigo-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-100 transition-colors">
-                            <i data-lucide="heart-handshake" class="w-7 h-7 text-indigo-600"></i>
-                        </div>
-                        <h3 class="font-bold text-xl text-slate-800 mb-3">Equity in Delivery</h3>
-                        <p class="text-slate-600 text-sm leading-relaxed">Ensuring essential services reach all demographics equally, especially marginalized and vulnerable populations.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Gradient Divider -->
-        <div class="flex justify-center reveal"><div class="w-32 h-1 bg-gradient-to-r from-transparent via-slate-300 to-transparent rounded-full opacity-50"></div></div>
-
-        <!-- Pillar 5: Public and Private Collaboration -->
-        <section id="collaboration" class="scroll-mt-32 reveal pb-12">
-            <div class="flex flex-col lg:flex-row gap-12 items-center">
-                <div class="lg:w-1/3">
-                    <div class="w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-200 text-rose-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-rose-200 transform -rotate-3 hover:rotate-0 transition-transform">
-                        <i data-lucide="handshake" class="w-8 h-8"></i>
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">5. Public & Private Collaboration</h2>
-                    <p class="text-slate-600 leading-relaxed text-lg">
-                        Governments cannot solve complex modern challenges alone. The scale of issues like climate change and infrastructure requires synergy between the public and private sectors.
+                        The most tangible interaction a person has with their government is through the delivery of
+                        e-governance and digital public services.
                     </p>
                 </div>
                 <div class="lg:w-2/3 grid grid-cols-1 gap-6">
-                    <div class="group bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-rose-300 hover:-translate-y-1 transition-all duration-300">
-                        <div class="flex flex-col sm:flex-row items-start gap-6">
-                            <div class="bg-rose-50 p-4 rounded-xl group-hover:bg-rose-500 group-hover:text-white text-rose-600 transition-colors duration-300 shadow-sm">
-                                <i data-lucide="building" class="w-8 h-8"></i>
+                    <div
+                        class="bg-gradient-to-br from-indigo-800 to-indigo-950 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden group">
+                        <i data-lucide="mouse-pointer-click"
+                            class="absolute -right-10 -bottom-10 w-64 h-64 text-white opacity-10 group-hover:scale-110 transition-transform duration-700"></i>
+                        <div class="relative z-10">
+                            <div
+                                class="bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-md mb-6 border border-white/30 shadow-inner">
+                                <i data-lucide="smartphone" class="w-7 h-7 text-white"></i>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-xl text-slate-800 mb-2">Public-Private Partnerships (PPPs)</h3>
-                                <p class="text-slate-600 text-base leading-relaxed">Formal agreements where government and private companies share the risks, rewards, and responsibilities of providing a public asset or service (e.g., transit systems, national broadband).</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="group bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-rose-300 hover:-translate-y-1 transition-all duration-300">
-                        <div class="flex flex-col sm:flex-row items-start gap-6">
-                            <div class="bg-rose-50 p-4 rounded-xl group-hover:bg-rose-500 group-hover:text-white text-rose-600 transition-colors duration-300 shadow-sm">
-                                <i data-lucide="lightbulb" class="w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-xl text-slate-800 mb-2">Innovation and Agility</h3>
-                                <p class="text-slate-600 text-base leading-relaxed">The private sector brings technological innovation, capital, and efficiency, while the government provides necessary regulatory frameworks, public interest oversight, and scale.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="group bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:border-rose-300 hover:-translate-y-1 transition-all duration-300">
-                        <div class="flex flex-col sm:flex-row items-start gap-6">
-                            <div class="bg-rose-50 p-4 rounded-xl group-hover:bg-rose-500 group-hover:text-white text-rose-600 transition-colors duration-300 shadow-sm">
-                                <i data-lucide="leaf" class="w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-xl text-slate-800 mb-2">Corporate Social Responsibility (CSR)</h3>
-                                <p class="text-slate-600 text-base leading-relaxed">Private entities align business practices with broader societal goals, contributing to community development and environmental sustainability outside of formal partnerships.</p>
-                            </div>
+                            <h3 class="font-bold text-2xl mb-4 text-indigo-50">Single-Window E-Governance</h3>
+                            <p class="text-indigo-200 text-base leading-relaxed max-w-lg">The transition from
+                                paper-based bureaucracy to digital portals. Online systems allow citizens to manage
+                                taxes, licenses, and benefits effortlessly.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
     </main>
 
-    <!-- Footer & Conclusion -->
-    <footer class="bg-slate-950 text-slate-300 py-20 border-t border-slate-800 relative overflow-hidden mt-12">
-        <!-- Background subtle glow -->
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-cyan-900/20 rounded-full mix-blend-screen filter blur-[100px] pointer-events-none"></div>
-        
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <div class="w-20 h-20 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl transform rotate-45 hover:rotate-90 transition-transform duration-500">
-                <i data-lucide="network" class="w-10 h-10 text-cyan-400 -rotate-45 transition-transform duration-500 group-hover:-rotate-90"></i>
-            </div>
-            <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-6 tracking-tight">Building Resilient Societies</h2>
-            <p class="text-xl leading-relaxed mb-12 text-slate-400 font-light max-w-3xl mx-auto">
-                These five elements do not operate in isolation. A digital citizen uses their rights to petition for new laws, which in turn might regulate how public-private partnerships deliver essential citizen services. Understanding governance through this multifaceted lens is essential.
-            </p>
-            
-            <div class="pt-8 border-t border-slate-800/60 text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p>&copy; 2026 CivicHub. Open Governance Initiative.</p>
-                <div class="flex gap-6">
-                    <a href="#" class="hover:text-cyan-400 transition-colors">Privacy Policy</a>
-                    <a href="#" class="hover:text-cyan-400 transition-colors">Terms of Service</a>
-                </div>
-            </div>
+    <footer class="bg-slate-950 text-slate-300 py-16 border-t border-slate-800 mt-12">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold text-white mb-6">Building Resilient Societies</h2>
+            <p class="text-slate-400 mb-8">Understanding governance through this multifaceted lens is essential for the
+                future.</p>
+            <p class="text-sm text-slate-600">&copy; 2026 CivicHub. Open Governance Initiative.</p>
         </div>
     </footer>
 
-    <!-- Scripts -->
+
+    <div id="auth-modal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0">
+
+        <div id="auth-modal-content"
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-all duration-300 relative">
+
+            <button id="close-modal-btn"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1.5 transition-colors z-10">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="bg-slate-50 px-8 pt-8 pb-6 border-b border-slate-100 text-center relative overflow-hidden">
+                <div
+                    class="absolute -top-10 -right-10 w-32 h-32 bg-civic-100 rounded-full mix-blend-multiply opacity-50">
+                </div>
+
+                <div class="bg-civic-600 text-white p-3 rounded-xl shadow-lg inline-flex mb-4 relative z-10">
+                    <i data-lucide="landmark" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-1 relative z-10">Welcome Back</h2>
+                <p class="text-slate-500 text-sm relative z-10">Securely access your Civic Dashboard.</p>
+            </div>
+
+            <div class="p-8">
+                <form id="loginForm" class="space-y-5">
+
+                    <div>
+                        <label for="identityId"
+                            class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Civic Identity
+                            ID</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="fingerprint" class="h-5 w-5 text-slate-400"></i>
+                            </div>
+                            <input type="text" id="identityId" required
+                                class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-civic-500 focus:border-transparent transition-all shadow-sm bg-slate-50/50"
+                                placeholder="e.g. citizen-492-alpha" value="citizen-492-alpha">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="password"
+                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Passphrase</label>
+                            <a href="#" class="text-xs font-medium text-civic-600 hover:text-civic-500">Forgot?</a>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
+                            </div>
+                            <input type="password" id="password" required
+                                class="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-civic-500 focus:border-transparent transition-all shadow-sm bg-slate-50/50"
+                                placeholder="••••••••" value="password123">
+                            <button type="button" id="togglePassword"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                                <i data-lucide="eye" class="h-5 w-5" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                        class="w-full mt-2 flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-civic-600 hover:bg-civic-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-civic-500 transition-all">
+                        <span>Authenticate</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 ml-2 mt-0.5"></i>
+                    </button>
+                </form>
+
+                <div class="mt-6 flex items-center justify-center">
+                    <div class="border-t border-slate-200 w-full"></div>
+                    <span class="px-3 text-xs text-slate-400 font-medium uppercase">Or</span>
+                    <div class="border-t border-slate-200 w-full"></div>
+                </div>
+
+                <button
+                    class="w-full mt-6 flex justify-center items-center py-3 px-4 border border-slate-200 rounded-xl shadow-sm bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                    <i data-lucide="shield" class="h-4 w-4 mr-2 text-slate-500"></i>
+                    Use National e-ID App
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Mobile Menu Toggle
-        const btn = document.getElementById('mobile-menu-btn');
-        const menu = document.getElementById('mobile-menu');
+        // --- Mobile Menu Toggle ---
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-        btn.addEventListener('click', () => {
-            menu.classList.toggle('hidden');
-        });
-
-        // Close mobile menu when a link is clicked
-        const mobileLinks = menu.querySelectorAll('a');
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                menu.classList.add('hidden');
-            });
-        });
-
-        // Intersection Observer for scroll animations (Reveal)
+        // --- Reveal on Scroll ---
         const revealElements = document.querySelectorAll('.reveal');
-        
-        const revealCallback = (entries, observer) => {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('active');
-                    observer.unobserve(entry.target); // Stop observing once revealed
+                    observer.unobserve(entry.target);
                 }
             });
-        };
-
-        const revealOptions = {
-            threshold: 0.15, // Trigger when 15% of the element is visible
-            rootMargin: "0px 0px -50px 0px" 
-        };
-
-        const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
-
+        }, { threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
         revealElements.forEach(el => revealObserver.observe(el));
+
+
+        // --- Authentication Modal Logic ---
+        const authModal = document.getElementById('auth-modal');
+        const authModalContent = document.getElementById('auth-modal-content');
+        const openAuthBtns = document.querySelectorAll('.open-auth-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // Open Modal
+        openAuthBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                authModal.classList.remove('hidden');
+                authModal.classList.add('flex');
+
+                // Slight delay to allow CSS transition to trigger
+                setTimeout(() => {
+                    authModal.classList.remove('opacity-0');
+                    authModalContent.classList.remove('scale-95');
+                    authModalContent.classList.add('scale-100');
+                }, 10);
+            });
+        });
+
+        // Close Modal Function
+        const closeModal = () => {
+            authModal.classList.add('opacity-0');
+            authModalContent.classList.remove('scale-100');
+            authModalContent.classList.add('scale-95');
+
+            setTimeout(() => {
+                authModal.classList.add('hidden');
+                authModal.classList.remove('flex');
+            }, 300); // Wait for transition to finish
+        };
+
+        closeModalBtn.addEventListener('click', closeModal);
+
+        // Close if clicking outside the modal box
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) closeModal();
+        });
+
+        // Password Visibility Toggle
+        document.getElementById('togglePassword').addEventListener('click', () => {
+            const pwd = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                pwd.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        });
+
+        // --- Form Submission & Redirection ---
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevent page reload
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalContent = submitBtn.innerHTML;
+
+            // 1. Show loading state
+            submitBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span class="ml-2">Verifying Identity...</span>`;
+            submitBtn.disabled = true;
+
+            // 2. Simulate network request (1.5 seconds)
+            setTimeout(() => {
+                // Generate a mock JWT token and store it
+                localStorage.setItem('civic_jwt_token', 'mock_token_12345');
+
+                // 3. Redirect to the Dashboard
+                // Ensure your dashboard file is named 'dashboard.html' and in the same directory
+                window.location.href = 'dashboard.html';
+            }, 1500);
+        });
+
     </script>
 </body>
+
 </html>
